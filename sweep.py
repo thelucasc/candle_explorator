@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# sweep.py — v1.8-tbrs (Refatorado v2.0)
+# sweep.py — v1.8-tbrs (Refatorado v2.0, Log TXT Final v3.1)
 # Este script importa os novos módulos de utilitários
 
 import argparse
@@ -8,7 +8,7 @@ import csv
 import random 
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
-import sys
+import sys # <--- ADICIONADO PARA LER O COMANDO
 from typing import Optional, Dict, List, Tuple
 
 import pandas as pd
@@ -66,7 +66,9 @@ def main():
 
     p.add_argument("--step",    type=int, default=25,      help="Passo 0..100 (default: 25). Usado apenas se 'step' for invocado nos grids B/S.")
     p.add_argument("--workers", type=int, default=max(1, cpu_count()-1), help="Nº de processos (default: núcleos-1)")
-    p.add_argument("--out",     default="sweep_results.csv", help="CSV de saída (salva o que for printado)")
+    
+    # (*** MUDANÇA v3.0: Lógica de Log ***)
+    p.add_argument("--log-file", default="sweep_log.txt", help="Arquivo .txt para salvar o log (default: sweep_log.txt)")
     
     p.add_argument("--print-mode", default="all", choices=["all", "winners", "pos"],
                    help="Modo de print/save: 'all' (padrão), 'winners' (só os que batem B&H), 'pos' (só retornos > 0)")
@@ -119,6 +121,10 @@ def main():
     p.add_argument("--emas", type=int, default=None, nargs='+')
 
     args = p.parse_args()
+    
+    # (*** MUDANÇA v3.0: Captura o comando e o arquivo de log ***)
+    full_command_str = "python " + " ".join(sys.argv)
+    log_file_path = args.log_file
     
     # Validações
     use_any_4h = args.buy4h is not None or args.sell4h is not None
@@ -340,35 +346,7 @@ def main():
     combos_to_run = combos[start_index:] 
 
     # --- 6. Preparar CSV de Saída ---
-    with open(args.out, "w", newline="", encoding="utf-8") as f:
-        metrics_cols_base = [
-            "b_exec_4h", "b_exec_8h", "b_exec_1d",
-            "s_exec_4h", "s_exec_8h", "s_exec_1d",
-            "b_sig_4h", "b_sig_8h", "b_sig_1d",
-            "s_sig_4h", "s_sig_8h", "s_sig_1d",
-            "b_ign_4h", "b_ign_8h", "b_ign_1d",
-            "s_ign_4h", "s_ign_8h", "s_ign_1d",
-            "sl", "tp", "tp_after", "ema",
-            "tbrs" # (*** MUDANÇA v1.9: 23 métricas ***)
-        ]
-        
-        params_header = [
-            "buy4h","sell4h","buy8h","sell8h","buy1d","sell1d",
-            "sl_up_pct", "sl_up_amount", "sl_down_pct", "sl_down_amount", 
-            "tp_pct",
-            "tp_after_pct", "tp_sell_pct", # <--- MUDANÇA v1.7
-            "tp_ema_pct", "tp_ema_amount", "ema_len"
-        ]
-        
-        # (*** MUDANÇA v1.6: Header dinâmico ***)
-        full_header = [*params_header]
-        for label in custom_labels:
-            label_suffix = f"_{label}d" if label != "ALL" else "_ALL"
-            full_header.append(f"strat{label_suffix}(%)")
-            full_header.extend([f"{c}{label_suffix}" for c in metrics_cols_base])
-        # (*** FIM DA MUDANÇA ***)
-
-        csv.writer(f).writerow(full_header)
+    # (*** MUDANÇA v3.0: Seção de header do CSV removida ***)
 
     # (*** CORREÇÃO: Readiciona a definição de format_grid_log ***)
     def format_grid_log(arg_val, grid_val):
@@ -409,7 +387,8 @@ def main():
         print(f"[INFO] Combinações a rodar: {len(combos_to_run)} (de {start_index} até {total})")
     print(f"[INFO] Workers: {args.workers}")
     print(f"[INFO] Print Mode: {args.print_mode.upper()}")
-    print(f"[INFO] Saída CSV: {args.out}\n")
+    # (*** MUDANÇA v3.0: Log TXT ***)
+    print(f"[INFO] Saída de Log TXT: {log_file_path}\n")
 
     start = datetime.now() 
     processed = start_index 
@@ -473,17 +452,12 @@ def main():
         is_any_winner = False
         is_any_positive = False
         
-        csv_row = [*params_tuple]
-        
         # (*** CORREÇÃO: Usa 'worker_data_payload' em vez de 'g_data' ***)
         date_list_from_worker = worker_data_payload['date_list']
         
         for date_label in date_list_from_worker:
             # (*** MUDANÇA v1.9: 23 métricas ***)
             pct, metrics = results_by_date.get(date_label, (0.0, (0,) * 23)) # Pega com segurança
-            
-            # Adiciona ao CSV
-            csv_row.extend([f"{pct:.6f}", *metrics])
             
             # Checa B&H
             # (*** CORREÇÃO: Usa 'worker_data_payload' em vez de 'g_data' ***)
@@ -537,8 +511,6 @@ def main():
                 return 
         
         # --- Printar ---
-        mark = lu.GREEN if is_any_winner else ""
-        label = "[+] WIN" if is_any_winner else "[ ] RUN"
         
         # (*** MUDANÇA v1.7: 16 parâmetros ***)
         b4,s4,b8,s8,b1,s1, \
@@ -550,22 +522,29 @@ def main():
         sl_down_str = f"SL-DN {sl_down_p:.1f}%@{sl_down_amt:.0f}%" if sl_down_p is not None else "SL-DN None"
         sl_str = f"{sl_up_str} | {sl_down_str}"
         tp_str = f"TP {tp_p:.1f}" if tp_p is not None else "TP None"
-        # (*** MUDANÇA v1.7: String TP-After ***)
         tp_after_str = f"TP-Aft {tp_after_p:.1f}%@{tp_sell_p:.1f}%" if (tp_after_p is not None and tp_sell_p is not None) else "TP-Aft None"
-        
         tp_ema_str = f"EMA{ema_len} {tp_ema_pct:.1f}%@{tp_ema_amt:.1f}%" if (tp_ema_pct is not None and tp_ema_amt is not None) else ""
-        
-        # (*** MUDANÇA v1.9: TBRS String ***)
         is_tbrs_on = worker_data_payload['common_params'].get('two_bar_reversal_stop', False)
         tbrs_str = "TBRS On" if is_tbrs_on else ""
         
-        # (*** MUDANÇA v1.9: Adiciona tbrs_str ***)
-        print(f"{mark}{label:<10} B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} | {tbrs_str} | "
-              f"PnL: [ {' | '.join(pnl_strs)} ]{lu.RESET}")
+        
+        # (*** MUDANÇA v3.1: Log TXT removido do handle_result ***)
+            
+        # 1. Monta a string apenas para o console
+        mark_console = lu.GREEN if is_any_winner else ""
+        label_console_str = "[+] WIN" if is_any_winner else "[ ] RUN"
 
-        # --- Salvar no CSV ---
-        with open(args.out, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(csv_row)
+        base_str = (
+            f"B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | "
+            f"{tp_ema_str} | {tbrs_str} | PnL: [ {' | '.join(pnl_strs)} ]"
+        )
+        
+        result_str_console = f"{mark_console}{label_console_str:<10} {base_str}{lu.RESET}"
+        
+        # 2. Printa no console
+        print(result_str_console)
+        
+        # (*** Lógica de salvar no log TXT foi MOVIDA para o sumário final ***)
             
         # (*** FIM DA MUDANÇA v1.6 ***)
 
@@ -593,13 +572,14 @@ def main():
 
     # --- 9. Printar Sumário Final ---
     dur = datetime.now() - start
-    print(f"\nConcluído em {dur}. Resultados salvos em -> {args.out}")
+    print(f"\nConcluído em {dur}. Resultados salvos em -> {log_file_path}")
     
     print("\n" + "="*80)
     print("===== SUMÁRIO DA EXECUÇÃO =====")
     print("="*80 + "\n")
     
-    # (*** MUDANÇA v1.6: Sumário Multi-Date ***)
+    # (*** MUDANÇA v3.1: Lista para guardar o sumário do log ***)
+    log_summary_lines_clean = [] # Armazena linhas limpas para o TXT
     
     date_list_final = worker_data_payload['date_list']
     
@@ -609,13 +589,21 @@ def main():
         
         best_res = best_results_by_date[date_label]
         
+        header_str = f"--- MELHOR RESULTADO (por PnL {label_periodo}) ---"
+        print(header_str) # Printa no console
+        
         if best_res:
-            print(f"--- MELHOR RESULTADO (por PnL {label_periodo}) ---")
-            # (*** USA logging_utils ***)
-            print(lu.format_result_line_custom(best_res, f"[{label_short}]", lu.GREEN, date_label))
+            # Linha para console (com cor)
+            console_line = lu.format_result_line_custom(best_res, f"[{label_short}]", lu.GREEN, date_label)
+            print(console_line)
+            
+            # Linha para log (sem cor)
+            log_line_clean = lu.format_result_line_custom(best_res, f"[{label_short}]", "", date_label)
+            log_summary_lines_clean.append(log_line_clean) # Adiciona à lista
+            
         else:
-            print(f"--- MELHOR RESULTADO (por PnL {label_periodo}) ---")
-            print(f"Nenhum resultado válido foi encontrado para '{label_periodo}'.")
+            no_result_str = f"Nenhum resultado válido foi encontrado para '{label_periodo}'."
+            print(no_result_str)
 
     # (*** LOG DE SL REMOVIDO ***)
             
@@ -649,7 +637,30 @@ def main():
                 print(lu.format_result_line_custom(single_result_tuple, f"[S {i+1}]", "", first_date_label))
     else:
         print("Nenhuma amostra foi coletado.")
+    
+    
+    # (*** MUDANÇA v3.1: Escreve o log final de vencedores no arquivo ***)
+    try:
+        log_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        separator = "-" * 80
         
+        with open(log_file_path, "a", encoding="utf-8") as f:
+            f.write(f"{log_time}\n")
+            f.write(f"Comando: {full_command_str}\n")
+            
+            # Escreve cada linha de "BEST"
+            f.write("Resultados (Vencedores Finais):\n")
+            if log_summary_lines_clean:
+                for line in log_summary_lines_clean:
+                    f.write(f"  {line}\n")
+            else:
+                f.write("  Nenhum resultado vencedor encontrado.\n")
+            
+            f.write(f"{separator}\n")
+            
+    except Exception as e:
+        print(f"\n[ERRO AO SALVAR LOG FINAL] Não foi possível escrever em {log_file_path}: {e}\n")
+
     print("\n" + "="*80)
 
     

@@ -1,0 +1,16 @@
+2025-11-16 18:33:11
+Comando: python .\sweep.py --file .\BTC3D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy1d step --sl-up-pct 2.5 4 --sl-up-amount 70 100 --sl-down-pct 2.5 3 4 5 6 --sl-down-amount 20 80 100 --tp-pct 50 100.0 --emas 20 40 50 100 --tp-ema-pct 20 30 50 --tp-ema-amount 10 30 --workers 7 --print-mode winners --date 1400 400 1800 310 1400 590 --step 10 --take-profit-after-percentage 15 30 40 60 --take-profit-percentage 30
+Resultados (Vencedores Finais):
+  [BEST 1400D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.5%@100% | SL-DN 2.5%@20% | TP 50.0 | TP-Aft 60.0%@30.0% | EMA40 50.0%@10.0% | 1400d +183.21% [B 4H:0/0(0) 8H:0/0(0) 1D:7/40(33) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:4 TP:3 TP-A:0 EMA:0 TBRS:0][0m
+  [BEST 400D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 4.0%@100% | SL-DN 2.5%@100% | TP 100.0 | TP-Aft 40.0%@30.0% | EMA20 30.0%@10.0% | 400d +46.63% [B 4H:0/0(0) 8H:0/0(0) 1D:6/19(13) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:3 TP:0 TP-A:1 EMA:0 TBRS:0][0m
+  [BEST 1800D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.5%@70% | SL-DN 4.0%@20% | TP 50.0 | TP-Aft 60.0%@30.0% | EMA20 50.0%@10.0% | 1800d +534.59% [B 4H:0/0(0) 8H:0/0(0) 1D:18/64(46) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:207 TP:5 TP-A:0 EMA:2 TBRS:0][0m
+  [BEST 310D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.5%@70% | SL-DN 3.0%@80% | TP 50.0 | TP-Aft 15.0%@30.0% | EMA20 20.0%@10.0% | 310d +0.00% [B 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0][0m
+  [BEST 1400D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.5%@100% | SL-DN 2.5%@20% | TP 50.0 | TP-Aft 60.0%@30.0% | EMA40 50.0%@10.0% | 1400d +183.21% [B 4H:0/0(0) 8H:0/0(0) 1D:7/40(33) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:4 TP:3 TP-A:0 EMA:0 TBRS:0][0m
+  [BEST 590D] B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 4.0%@100% | SL-DN 2.5%@80% | TP 50.0 | TP-Aft 40.0%@30.0% | EMA40 50.0%@10.0% | 590d +37.14% [B 4H:0/0(0) 8H:0/0(0) 1D:7/20(13) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:4 TP:1 TP-A:1 EMA:0 TBRS:0][0m
+--------------------------------------------------------------------------------
+2025-11-16 18:35:02
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  [BEST 1400D] B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | 1400d +600.99% [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0][0m
+  [BEST 400D] B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | 400d +71.14% [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0][0m
+--------------------------------------------------------------------------------
