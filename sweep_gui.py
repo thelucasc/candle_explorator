@@ -7,6 +7,7 @@ Interface gráfica para configurar e executar o sweep de parâmetros
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog, messagebox
 import subprocess
+import sys
 import threading
 import os
 import re
@@ -28,7 +29,8 @@ class SweepGUI:
         
         # Criar interface
         self.create_widgets()
-        self.load_last_command()
+        # Carrega o último comando após criar os widgets
+        self.root.after(100, self.load_last_command)  # Pequeno delay para garantir que widgets estão prontos
         self.load_log_file()
         
     def create_widgets(self):
@@ -45,6 +47,22 @@ class SweepGUI:
         main_paned.add(right_frame, weight=1)
         
         # ========== PAINEL ESQUERDO ==========
+        # Frame para status do teste (no topo)
+        test_status_frame = ttk.Frame(left_frame)
+        test_status_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        ttk.Label(test_status_frame, text="Status do Teste:", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        self.test_status_label = ttk.Label(
+            test_status_frame, 
+            text="Executando...", 
+            font=("Arial", 9),
+            foreground="blue"
+        )
+        self.test_status_label.pack(side=tk.LEFT, padx=5)
+        
+        # Executa o teste automaticamente ao iniciar o GUI
+        self._run_test_on_startup()
+        
         # Notebook para tabs (Parâmetros e Logs)
         left_notebook = ttk.Notebook(left_frame)
         left_notebook.pack(fill=tk.BOTH, expand=True)
@@ -73,6 +91,28 @@ class SweepGUI:
         self.vars = {}
         self.create_parameter_widgets(scrollable_frame)
         
+        # Tab 2: Parâmetros dos Sinais de Compra
+        signals_frame = ttk.Frame(left_notebook)
+        left_notebook.add(signals_frame, text="Sinais de Compra")
+        
+        # Scrollable frame para parâmetros dos sinais
+        canvas2 = tk.Canvas(signals_frame)
+        scrollbar2 = ttk.Scrollbar(signals_frame, orient="vertical", command=canvas2.yview)
+        scrollable_frame2 = ttk.Frame(canvas2)
+        
+        scrollable_frame2.bind(
+            "<Configure>",
+            lambda e: canvas2.configure(scrollregion=canvas2.bbox("all"))
+        )
+        
+        canvas2.create_window((0, 0), window=scrollable_frame2, anchor="nw")
+        canvas2.configure(yscrollcommand=scrollbar2.set)
+        
+        canvas2.pack(side="left", fill="both", expand=True)
+        scrollbar2.pack(side="right", fill="y")
+        
+        self.create_signal_parameter_widgets(scrollable_frame2)
+        
         # Botão de execução
         button_frame = ttk.Frame(left_frame)
         button_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -93,7 +133,7 @@ class SweepGUI:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
         
-        # Tab 2: Logs do Terminal
+        # Tab 3: Logs do Terminal
         logs_frame = ttk.Frame(left_notebook)
         left_notebook.add(logs_frame, text="Logs do Terminal")
         
@@ -264,6 +304,77 @@ class SweepGUI:
         add_param("Stops On Candle:", "entry", "stops_on_candle", "1D")
         add_param("Stop Loss Signal:", "checkbox", "stop_loss_signal", False)
         add_param("Two Bar Reversal Stop:", "checkbox", "two_bar_reversal_stop", False)
+    
+    def create_signal_parameter_widgets(self, parent):
+        """Cria os widgets de parâmetros dos sinais de compra"""
+        row = 0
+        
+        # Função helper para criar linha de parâmetro
+        def add_param(label, widget_type, var_name, default=None, help_text=""):
+            nonlocal row
+            frame = ttk.Frame(parent)
+            frame.grid(row=row, column=0, sticky="ew", padx=5, pady=2)
+            parent.columnconfigure(0, weight=1)
+            
+            ttk.Label(frame, text=label, width=35, anchor="w").pack(side=tk.LEFT, padx=5)
+            
+            if widget_type == "entry":
+                var = tk.StringVar(value=str(default) if default is not None else "")
+                widget = ttk.Entry(frame, textvariable=var, width=40)
+                widget.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+            elif widget_type == "entry_int":
+                var = tk.StringVar(value=str(default) if default is not None else "")
+                widget = ttk.Entry(frame, textvariable=var, width=40)
+                widget.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+            elif widget_type == "entry_float":
+                var = tk.StringVar(value=str(default) if default is not None else "")
+                widget = ttk.Entry(frame, textvariable=var, width=40)
+                widget.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+            else:
+                var = None
+                widget = None
+            
+            if help_text:
+                help_label = ttk.Label(frame, text=help_text, font=("Arial", 8), foreground="gray")
+                help_label.pack(side=tk.LEFT, padx=5)
+            
+            self.vars[var_name] = var
+            row += 1
+            return var
+        
+        # Separador: Sinais 4H/8H
+        ttk.Separator(parent, orient=tk.HORIZONTAL).grid(row=row, column=0, sticky="ew", padx=5, pady=10)
+        row += 1
+        ttk.Label(parent, text="Sinais de Compra 4H/8H", font=("Arial", 10, "bold")).grid(row=row, column=0, sticky="w", padx=5)
+        row += 1
+        
+        add_param("SMA Length (4H/8H):", "entry_int", "signal_4h8h_sma_length", "20", 
+                  help_text="(default: 20)")
+        add_param("PIR Threshold (4H/8H):", "entry_float", "signal_4h8h_pir_threshold", "0.85",
+                  help_text="(default: 0.85)")
+        
+        # Separador: Sinais 1D
+        ttk.Separator(parent, orient=tk.HORIZONTAL).grid(row=row, column=0, sticky="ew", padx=5, pady=10)
+        row += 1
+        ttk.Label(parent, text="Sinais de Compra 1D", font=("Arial", 10, "bold")).grid(row=row, column=0, sticky="w", padx=5)
+        row += 1
+        
+        add_param("SMA Length (1D):", "entry_int", "signal_1d_sma_length", "20",
+                  help_text="(default: 20)")
+        add_param("Trend Regime Threshold (1D):", "entry_float", "signal_1d_trend_regime_threshold", "0.002",
+                  help_text="(default: 0.002 = 0.2%)")
+        add_param("Trend Regime Tree Threshold (1D):", "entry_float", "signal_1d_trend_regime_tree_threshold", "1.5",
+                  help_text="(default: 1.5)")
+        add_param("Distância SMA Threshold (1D):", "entry_float", "signal_1d_dist_ma_threshold", "0.03",
+                  help_text="(default: 0.03 = 3%)")
+        add_param("RSI Length (1D):", "entry_int", "signal_1d_rsi_length", "14",
+                  help_text="(default: 14)")
+        add_param("RSI Threshold (1D):", "entry_float", "signal_1d_rsi_threshold", "60",
+                  help_text="(default: 60)")
+        add_param("PIR Threshold Anterior (1D):", "entry_float", "signal_1d_pir_threshold_prev", "0.60",
+                  help_text="(default: 0.60)")
+        add_param("PIR Threshold Confirmação (1D):", "entry_float", "signal_1d_pir_threshold_confirm", "0.40",
+                  help_text="(default: 0.40)")
         
     def browse_file(self, var):
         """Abre diálogo para selecionar arquivo"""
@@ -276,10 +387,20 @@ class SweepGUI:
     
     def load_last_command(self):
         """Carrega os parâmetros do último comando executado do sweep_log.txt"""
-        log_file = "sweep_log.txt"
+        # Verifica se self.vars existe (pode não existir se chamado antes de create_widgets)
+        if not hasattr(self, 'vars') or not self.vars:
+            return
+        
+        log_file = self.vars.get("log_file", tk.StringVar(value="sweep_log.txt")).get()
+        if not log_file:
+            log_file = "sweep_log.txt"
         
         if not os.path.exists(log_file):
-            return  # Não há log para carregar
+            # Tenta o arquivo padrão se o especificado não existir
+            if log_file != "sweep_log.txt" and os.path.exists("sweep_log.txt"):
+                log_file = "sweep_log.txt"
+            else:
+                return  # Não há log para carregar
         
         try:
             with open(log_file, "r", encoding="utf-8") as f:
@@ -293,11 +414,22 @@ class SweepGUI:
                     break
             
             if not last_command:
+                # Debug: mostra se não encontrou comando
+                print(f"[DEBUG] Não encontrou linha 'Comando:' no arquivo {log_file}")
                 return  # Não encontrou comando
             
+            # Debug: mostra o comando encontrado (apenas no console, não no GUI)
+            # print(f"[DEBUG] Comando encontrado: {last_command[:100]}...")
+            
             # Parse do comando usando shlex para lidar com espaços e aspas
+            # No Windows, shlex pode ter problemas com caminhos .\arquivo.csv
+            # Então primeiro fazemos um pré-processamento para proteger os caminhos
             try:
-                parts = shlex.split(last_command)
+                # Substitui .\ por .\\ temporariamente para proteger durante o split
+                protected = last_command.replace(".\\", ".__TEMP_BACKSLASH__")
+                parts = shlex.split(protected)
+                # Restaura os caminhos originais
+                parts = [p.replace(".__TEMP_BACKSLASH__", ".\\") for p in parts]
             except:
                 # Fallback: split simples se shlex falhar
                 parts = last_command.split()
@@ -334,7 +466,12 @@ class SweepGUI:
                         "date", "buy1d", "sell1d", "buy4h", "sell4h", "buy8h", "sell8h",
                         "sl_up_pct", "sl_up_amount", "sl_down_pct", "sl_down_amount",
                         "tp_pct", "take_profit_after_percentage", "take_profit_percentage",
-                        "tp_ema_pct", "tp_ema_amount", "emas", "stops_on_candle"
+                        "tp_ema_pct", "tp_ema_amount", "emas", "stops_on_candle",
+                        "signal_4h8h_sma_length", "signal_4h8h_pir_threshold",
+                        "signal_1d_sma_length", "signal_1d_trend_regime_threshold",
+                        "signal_1d_trend_regime_tree_threshold", "signal_1d_dist_ma_threshold",
+                        "signal_1d_rsi_length", "signal_1d_rsi_threshold",
+                        "signal_1d_pir_threshold_prev", "signal_1d_pir_threshold_confirm"
                     ]
                     
                     if arg_name in multi_value_args:
@@ -348,20 +485,39 @@ class SweepGUI:
                         
                         if arg_name in self.vars:
                             self.vars[arg_name].set(" ".join(values))
+                        # else:
+                        #     print(f"[DEBUG] Campo não encontrado (multi): {arg_name}")
                     else:
                         # Argumento com valor único
                         i += 1
                         if i < len(parts) and not parts[i].startswith("--"):
                             value = parts[i]
                             
+                            # Corrige caminhos que podem ter sido parseados incorretamente
+                            # Se o valor começa com . seguido de letra (sem barra), adiciona .\
+                            # Isso pode acontecer se shlex.split interpretou .\arquivo.csv como .arquivo.csv
+                            if value.startswith(".") and len(value) > 1:
+                                if not (value.startswith(".\\") or value.startswith("./")):
+                                    # Se começa com . seguido de letra/número, provavelmente é .\arquivo
+                                    if value[1].isalnum() or value[1] in ['_', '-']:
+                                        value = ".\\" + value[1:]
+                            
                             # Usa o nome do argumento diretamente (já convertido de - para _)
                             if arg_name in self.vars:
                                 self.vars[arg_name].set(value)
+                            # else:
+                            #     print(f"[DEBUG] Campo não encontrado (single): {arg_name} = {value}")
+                            # Debug: mostra se o campo não foi encontrado
+                            # else:
+                            #     print(f"[DEBUG] Campo não encontrado: {arg_name}")
                 i += 1
                 
         except Exception as e:
-            # Silenciosamente ignora erros de parse
-            pass
+            # Loga o erro para debug, mas não interrompe a execução
+            # print(f"[ERRO ao carregar último comando] {e}")
+            # import traceback
+            # traceback.print_exc()
+            pass  # Silenciosamente ignora erros de parse
     
     def build_command(self) -> List[str]:
         """Constrói o comando para executar o sweep.py"""
@@ -429,6 +585,30 @@ class SweepGUI:
         if self.vars["emas"].get().strip():
             cmd.extend(["--emas"] + self.vars["emas"].get().strip().split())
         
+        # Parâmetros dos Sinais de Compra (4H/8H)
+        if self.vars.get("signal_4h8h_sma_length") and self.vars["signal_4h8h_sma_length"].get().strip():
+            cmd.extend(["--signal-4h8h-sma-length"] + self.vars["signal_4h8h_sma_length"].get().strip().split())
+        if self.vars.get("signal_4h8h_pir_threshold") and self.vars["signal_4h8h_pir_threshold"].get().strip():
+            cmd.extend(["--signal-4h8h-pir-threshold"] + self.vars["signal_4h8h_pir_threshold"].get().strip().split())
+        
+        # Parâmetros dos Sinais de Compra (1D)
+        if self.vars.get("signal_1d_sma_length") and self.vars["signal_1d_sma_length"].get().strip():
+            cmd.extend(["--signal-1d-sma-length"] + self.vars["signal_1d_sma_length"].get().strip().split())
+        if self.vars.get("signal_1d_trend_regime_threshold") and self.vars["signal_1d_trend_regime_threshold"].get().strip():
+            cmd.extend(["--signal-1d-trend-regime-threshold"] + self.vars["signal_1d_trend_regime_threshold"].get().strip().split())
+        if self.vars.get("signal_1d_trend_regime_tree_threshold") and self.vars["signal_1d_trend_regime_tree_threshold"].get().strip():
+            cmd.extend(["--signal-1d-trend-regime-tree-threshold"] + self.vars["signal_1d_trend_regime_tree_threshold"].get().strip().split())
+        if self.vars.get("signal_1d_dist_ma_threshold") and self.vars["signal_1d_dist_ma_threshold"].get().strip():
+            cmd.extend(["--signal-1d-dist-ma-threshold"] + self.vars["signal_1d_dist_ma_threshold"].get().strip().split())
+        if self.vars.get("signal_1d_rsi_length") and self.vars["signal_1d_rsi_length"].get().strip():
+            cmd.extend(["--signal-1d-rsi-length"] + self.vars["signal_1d_rsi_length"].get().strip().split())
+        if self.vars.get("signal_1d_rsi_threshold") and self.vars["signal_1d_rsi_threshold"].get().strip():
+            cmd.extend(["--signal-1d-rsi-threshold"] + self.vars["signal_1d_rsi_threshold"].get().strip().split())
+        if self.vars.get("signal_1d_pir_threshold_prev") and self.vars["signal_1d_pir_threshold_prev"].get().strip():
+            cmd.extend(["--signal-1d-pir-threshold-prev"] + self.vars["signal_1d_pir_threshold_prev"].get().strip().split())
+        if self.vars.get("signal_1d_pir_threshold_confirm") and self.vars["signal_1d_pir_threshold_confirm"].get().strip():
+            cmd.extend(["--signal-1d-pir-threshold-confirm"] + self.vars["signal_1d_pir_threshold_confirm"].get().strip().split())
+        
         # Opções Avançadas
         if self.vars["initial_capital"].get().strip():
             cmd.extend(["--initial-capital", self.vars["initial_capital"].get().strip()])
@@ -472,27 +652,215 @@ class SweepGUI:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
-                bufsize=1
+                bufsize=1,
+                encoding='utf-8',
+                errors='replace'
             )
             
             # Ler output em tempo real
             for line in iter(self.process.stdout.readline, ''):
                 if not self.is_running:
                     break
-                self.root.after(0, self._append_log, line)
+                if line:  # Só processa linhas não vazias
+                    # Processa linha por linha para melhor detecção
+                    self.root.after(0, self._append_log, line)
             
             self.process.wait()
             
+            # Verifica se houve erro no processo
+            if self.process.returncode != 0 and self.is_running:
+                self.root.after(0, self._append_log, f"\n[ERRO] Processo terminou com código {self.process.returncode}\n")
+                self.root.after(0, self._update_test_status, "ERRO na execução", "red")
+            
             if self.is_running:
                 self.root.after(0, self._sweep_finished)
+        except MemoryError as e:
+            self.root.after(0, self._append_log, f"\n[ERRO CRÍTICO] Estouro de memória: {str(e)}\n")
+            self.root.after(0, self._update_test_status, "ERRO: Estouro de memória", "red")
+            self.root.after(0, self._sweep_finished)
         except Exception as e:
             self.root.after(0, self._append_log, f"\n[ERRO] {str(e)}\n")
+            error_msg = str(e)[:50] if len(str(e)) > 50 else str(e)
+            self.root.after(0, self._update_test_status, f"ERRO: {error_msg}", "red")
             self.root.after(0, self._sweep_finished)
     
     def _append_log(self, text):
         """Adiciona texto ao log (thread-safe)"""
         self.log_text.insert(tk.END, text)
         self.log_text.see(tk.END)
+    
+    def _update_test_status(self, status_text, color):
+        """Atualiza o label de status do teste"""
+        self.test_status_label.config(text=status_text, foreground=color)
+    
+    def _run_test_on_startup(self):
+        """Executa o test.py automaticamente quando o GUI inicia"""
+        def run_test_thread():
+            test_file = "test.py"
+            self.root.after(0, self._append_log, f"[TEST] Iniciando execução do teste...\n")
+            
+            if not os.path.exists(test_file):
+                self.root.after(0, self._append_log, f"[TEST] ERRO: {test_file} não encontrado!\n")
+                self.root.after(0, self._update_test_status, "test.py não encontrado", "gray")
+                return
+            
+            self.root.after(0, self._append_log, f"[TEST] Arquivo encontrado: {test_file}\n")
+            self.root.after(0, self._append_log, f"[TEST] Executando: {sys.executable} {test_file}\n")
+            
+            try:
+                start_time = datetime.now()
+                self.root.after(0, self._append_log, f"[TEST] Início: {start_time.strftime('%H:%M:%S')}\n")
+                
+                # Usa Popen para poder monitorar em tempo real
+                process = subprocess.Popen(
+                    [sys.executable, test_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1
+                )
+                
+                self.root.after(0, self._append_log, f"[TEST] Processo iniciado (PID: {process.pid})\n")
+                
+                # Monitora o processo com timeout
+                import time
+                timeout_seconds = 300  # 5 minutos
+                start_wait = time.time()
+                
+                # Lê output em tempo real
+                stdout_lines = []
+                stderr_lines = []
+                
+                # Lê output linha por linha até o processo terminar
+                while True:
+                    # Verifica timeout
+                    elapsed = time.time() - start_wait
+                    if elapsed > timeout_seconds:
+                        self.root.after(0, self._append_log, f"[TEST] TIMEOUT após {timeout_seconds}s! Matando processo...\n")
+                        process.kill()
+                        raise subprocess.TimeoutExpired(process.args, timeout_seconds)
+                    
+                    # Verifica se processo terminou
+                    returncode = process.poll()
+                    if returncode is not None:
+                        # Processo terminou, lê o restante do output
+                        self.root.after(0, self._append_log, f"[TEST] Processo terminou (return code: {returncode})\n")
+                        break
+                    
+                    # Lê linhas disponíveis (não bloqueia se não houver)
+                    try:
+                        if process.stdout:
+                            # Tenta ler uma linha (pode retornar vazio se não houver)
+                            line = process.stdout.readline()
+                            if line:
+                                stdout_lines.append(line)
+                                # Mostra todas as linhas em tempo real
+                                self.root.after(0, self._append_log, f"[TEST] {line}")
+                                # Verifica se encontrou indicadores de sucesso/falha
+                                if "[SUCESSO]" in line or "Todos os períodos OK" in line:
+                                    self.root.after(0, self._append_log, f"[TEST] Encontrou indicador de sucesso!\n")
+                                elif "[FALHA]" in line or "ERRO" in line.upper():
+                                    self.root.after(0, self._append_log, f"[TEST] Encontrou indicador de falha!\n")
+                    except:
+                        pass
+                    
+                    try:
+                        if process.stderr:
+                            line = process.stderr.readline()
+                            if line:
+                                stderr_lines.append(line)
+                                self.root.after(0, self._append_log, f"[TEST] STDERR: {line}")
+                    except:
+                        pass
+                    
+                    time.sleep(0.1)  # Pequeno delay para não consumir CPU
+                
+                # Processo terminou, pega o restante do output (se houver)
+                try:
+                    remaining_stdout, remaining_stderr = process.communicate(timeout=2)
+                    if remaining_stdout:
+                        stdout_lines.append(remaining_stdout)
+                        # Mostra o restante
+                        for line in remaining_stdout.split('\n'):
+                            if line.strip():
+                                self.root.after(0, self._append_log, f"[TEST] {line}\n")
+                    if remaining_stderr:
+                        stderr_lines.append(remaining_stderr)
+                except:
+                    pass
+                
+                stdout = ''.join(stdout_lines)
+                stderr = ''.join(stderr_lines)
+                returncode = process.returncode
+                
+                end_time = datetime.now()
+                duration = end_time - start_time
+                self.root.after(0, self._append_log, f"[TEST] Término: {end_time.strftime('%H:%M:%S')} (duração: {duration})\n")
+                self.root.after(0, self._append_log, f"[TEST] Return code: {returncode}\n")
+                
+                # Verifica se o teste passou
+                combined = stdout + stderr
+                
+                self.root.after(0, self._append_log, f"[TEST] Tamanho stdout: {len(stdout)} caracteres\n")
+                self.root.after(0, self._append_log, f"[TEST] Tamanho stderr: {len(stderr)} caracteres\n")
+                
+                # Mostra primeiras e últimas linhas do output
+                if stdout:
+                    stdout_lines = stdout.split('\n')
+                    self.root.after(0, self._append_log, f"[TEST] Primeiras 3 linhas do stdout:\n")
+                    for line in stdout_lines[:3]:
+                        if line.strip():
+                            self.root.after(0, self._append_log, f"  {line}\n")
+                    self.root.after(0, self._append_log, f"[TEST] Últimas 3 linhas do stdout:\n")
+                    for line in stdout_lines[-3:]:
+                        if line.strip():
+                            self.root.after(0, self._append_log, f"  {line}\n")
+                
+                if stderr:
+                    self.root.after(0, self._append_log, f"[TEST] Stderr:\n{stderr[:500]}\n")
+                
+                test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                if "[SUCESSO]" in combined or "Todos os períodos OK" in combined:
+                    status_str = f"TEST: {test_time} - PASS"
+                    self.root.after(0, self._append_log, f"[TEST] Status: PASS (encontrou [SUCESSO] ou 'Todos os períodos OK')\n")
+                    self.root.after(0, self._update_test_status, status_str, "green")
+                elif "[FALHA]" in combined or "ERRO" in combined.upper() or returncode != 0:
+                    status_str = f"TEST: {test_time} - FAIL"
+                    self.root.after(0, self._append_log, f"[TEST] Status: FAIL (encontrou [FALHA], ERRO ou return code != 0)\n")
+                    self.root.after(0, self._update_test_status, status_str, "red")
+                else:
+                    # Se não encontrar indicadores claros, usa o return code
+                    if returncode == 0:
+                        status_str = f"TEST: {test_time} - PASS"
+                        self.root.after(0, self._append_log, f"[TEST] Status: PASS (return code == 0, sem indicadores claros)\n")
+                        self.root.after(0, self._update_test_status, status_str, "green")
+                    else:
+                        status_str = f"TEST: {test_time} - FAIL"
+                        self.root.after(0, self._append_log, f"[TEST] Status: FAIL (return code != 0, sem indicadores claros)\n")
+                        self.root.after(0, self._update_test_status, status_str, "red")
+                        
+            except subprocess.TimeoutExpired:
+                test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                status_str = f"TEST: {test_time} - TIMEOUT"
+                self.root.after(0, self._append_log, f"[TEST] ERRO: Timeout após 5 minutos!\n")
+                self.root.after(0, self._update_test_status, status_str, "red")
+            except Exception as e:
+                test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                status_str = f"TEST: {test_time} - ERRO"
+                self.root.after(0, self._append_log, f"[TEST] ERRO: {str(e)}\n")
+                self.root.after(0, self._append_log, f"[TEST] Tipo do erro: {type(e).__name__}\n")
+                import traceback
+                self.root.after(0, self._append_log, f"[TEST] Traceback:\n{traceback.format_exc()}\n")
+                self.root.after(0, self._update_test_status, status_str, "red")
+        
+        # Executa em thread separada para não travar o GUI
+        thread = threading.Thread(target=run_test_thread, daemon=True)
+        thread.start()
     
     def _sweep_finished(self):
         """Callback quando o sweep termina"""
@@ -595,30 +963,42 @@ class SweepGUI:
             for line in lines:
                 # Detecta linha de resultado [BEST ...]
                 if "[BEST" in line:
-                    # Extrair percentual de retorno - padrão: "1400d +183.21%" ou "ALL +50.00%"
-                    match = re.search(r'(\d+|ALL)(?:d)?\s+([+-]?\d+\.\d+)%', line)
-                    if match:
-                        days = match.group(1)
-                        pct = float(match.group(2))
-                        # Remove códigos ANSI antes de adicionar
-                        clean_line = re.sub(r'\x1b\[[0-9;]*m', '', line.strip())
-                        winners.append((days, pct, clean_line))
+                    # Extrai o período do label [BEST PERIODD] primeiro
+                    best_match = re.search(r'\[BEST\s+(\d+|ALL)D?\]', line, re.IGNORECASE)
+                    if best_match:
+                        days = best_match.group(1)
+                        # Extrai o percentual - padrão: "PERIODd +183.21%" no final da linha
+                        # Procura pelo padrão específico do período seguido de percentual
+                        pct_match = re.search(rf'{days}(?:d)?\s+([+-]?\d+\.\d+)%', line, re.IGNORECASE)
+                        if pct_match:
+                            pct = float(pct_match.group(1))
+                            # Remove códigos ANSI antes de adicionar
+                            clean_line = re.sub(r'\x1b\[[0-9;]*m', '', line.strip())
+                            winners.append((days, pct, clean_line))
             
-            # Ordenar por percentual (maior primeiro)
-            winners.sort(key=lambda x: x[1], reverse=True)
+            # Agrupar por período e manter apenas o melhor de cada período
+            best_by_period = {}
+            for days, pct, full_line in winners:
+                if days not in best_by_period or pct > best_by_period[days][1]:
+                    best_by_period[days] = (days, pct, full_line)
+            
+            # Converter para lista e ordenar por percentual (maior primeiro)
+            unique_winners = list(best_by_period.values())
+            unique_winners.sort(key=lambda x: x[1], reverse=True)
             
             # Mostrar top 30
-            top_count = min(30, len(winners))
-            self.results_text.insert(tk.END, f"Top {top_count} Vencedores (ordenados por retorno):\n\n")
+            top_count = min(30, len(unique_winners))
+            self.results_text.insert(tk.END, f"Top {top_count} Vencedores (1 por período, ordenados por retorno):\n\n")
             
-            for i, (days, pct, full_line) in enumerate(winners[:top_count], 1):
+            for i, (days, pct, full_line) in enumerate(unique_winners[:top_count], 1):
                 self.results_text.insert(tk.END, f"{i}. [{days}D] {pct:+.2f}%\n")
                 self.results_text.insert(tk.END, f"   {full_line}\n\n")
             
-            if not winners:
+            if not unique_winners:
                 self.results_text.insert(tk.END, "Nenhum vencedor encontrado no log.\n")
             else:
-                self.results_text.insert(tk.END, f"\nTotal de vencedores encontrados: {len(winners)}\n")
+                self.results_text.insert(tk.END, f"\nTotal de vencedores únicos (1 por período): {len(unique_winners)}\n")
+                self.results_text.insert(tk.END, f"Total de entradas no log: {len(winners)}\n")
                 
         except Exception as e:
             self.results_text.insert(tk.END, f"Erro ao processar sweep_log.txt: {str(e)}\n")

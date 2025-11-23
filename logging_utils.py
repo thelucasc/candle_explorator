@@ -114,11 +114,46 @@ def format_result_line_custom(res, label, mark, days_label):
     Retorna uma lista com duas linhas: [linha_percentual, linha_detalhes]
     """
     try:
-        # (*** MUDANÇA v1.6: Unpack de 16 params ***)
-        b4,s4,b8,s8,b1,s1, \
-        sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
-        tp_p, tp_after_p, tp_sell_p, \
-        tp_ema_pct, tp_ema_amt, ema_len = res[0:16]
+        # (*** MUDANÇA: Detecta se há parâmetros dos sinais (26 params) ou apenas 16 ***)
+        has_signal_params = len(res) >= 26
+        
+        if has_signal_params:
+            # 26 parâmetros: 16 originais + 10 parâmetros dos sinais
+            b4,s4,b8,s8,b1,s1, \
+            sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
+            tp_p, tp_after_p, tp_sell_p, \
+            tp_ema_pct, tp_ema_amt, ema_len, \
+            sig_4h8h_sma_len, sig_4h8h_pir_th, \
+            sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
+            sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
+            sig_1d_pir_prev, sig_1d_pir_confirm = res[0:26]
+            
+            pct_custom = res[26]
+            metrics_custom = res[27]
+        else:
+            # (*** MUDANÇA v1.6: Unpack de 16 params ***)
+            b4,s4,b8,s8,b1,s1, \
+            sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
+            tp_p, tp_after_p, tp_sell_p, \
+            tp_ema_pct, tp_ema_amt, ema_len = res[0:16]
+            
+            # (*** MUDANÇA v1.6: Índices de métricas ***)
+            # --- Métricas Custom ---
+            pct_custom = res[16]     # <--- MUDANÇA DE [14]
+            metrics_custom = res[17] # <--- MUDANÇA DE [15]
+            # (*** FIM DA MUDANÇA ***)
+            
+            # Parâmetros dos sinais não disponíveis (usando valores padrão)
+            sig_4h8h_sma_len = None
+            sig_4h8h_pir_th = None
+            sig_1d_sma_len = None
+            sig_1d_trend_reg_th = None
+            sig_1d_trend_tree_th = None
+            sig_1d_dist_ma_th = None
+            sig_1d_rsi_len = None
+            sig_1d_rsi_th = None
+            sig_1d_pir_prev = None
+            sig_1d_pir_confirm = None
         
         # (*** MUDANÇA v1.5: SL Bifurcado - String de SL ***)
         sl_up_str = f"SL-UP {sl_up_p:.1f}%@{sl_up_amt:.0f}%" if sl_up_p is not None else "SL-UP None"
@@ -132,11 +167,15 @@ def format_result_line_custom(res, label, mark, days_label):
         
         tp_ema_str = f"EMA{ema_len} {tp_ema_pct:.1f}%@{tp_ema_amt:.1f}%" if (tp_ema_pct is not None and tp_ema_amt is not None) else ""
         
-        # (*** MUDANÇA v1.6: Índices de métricas ***)
-        # --- Métricas Custom ---
-        pct_custom = res[16]     # <--- MUDANÇA DE [14]
-        metrics_custom = res[17] # <--- MUDANÇA DE [15]
-        # (*** FIM DA MUDANÇA ***)
+        # (*** MUDANÇA: String de parâmetros dos sinais ***)
+        signal_params_str = ""
+        if has_signal_params and sig_4h8h_sma_len is not None:
+            signal_params_str = (
+                f"| Sig 4H/8H: SMA{sig_4h8h_sma_len:.0f} PIR{sig_4h8h_pir_th:.2f} | "
+                f"Sig 1D: SMA{sig_1d_sma_len:.0f} TR{sig_1d_trend_reg_th:.3f} TTR{sig_1d_trend_tree_th:.1f} "
+                f"DM{sig_1d_dist_ma_th:.2f} RSI{sig_1d_rsi_len:.0f}/{sig_1d_rsi_th:.0f} "
+                f"PIR{sig_1d_pir_prev:.2f}/{sig_1d_pir_confirm:.2f}"
+            )
         
         # (*** MUDANÇA v1.9: 23 métricas ***)
         b4h_e, b8h_e, b1d_e, s4h_e, s8h_e, s1d_e, \
@@ -157,8 +196,8 @@ def format_result_line_custom(res, label, mark, days_label):
         # O label já contém o período, então não precisa adicionar novamente
         linha1 = f"{clean_label} - {pct_custom:+.2f}%"
         
-        # Linha 2: Detalhes (formato: "B/S (4H ...) | ...")
-        linha2 = f"B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} | {metrics_str}"
+        # Linha 2: Detalhes (formato: "B/S (4H ...) | ... | Sig ...")
+        linha2 = f"B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} {signal_params_str}| {metrics_str}"
         
         return [linha1, linha2]
     except Exception as e:

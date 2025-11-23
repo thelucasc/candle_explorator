@@ -98,8 +98,23 @@ def run_test():
 
     stdout = result.stdout or ""
     print("--- Saída do sweep.py (SUMÁRIO) ---")
-    summary_part = stdout.split("===== SUMÁRIO DA EXECUÇÃO =====")[-1]
-    print(summary_part.strip())
+    # Procura pelos resultados BEST (novo formato sem sumário)
+    if "BEST" in stdout:
+        # Pega a parte final com os resultados
+        lines = stdout.split("\n")
+        best_lines = [line for line in lines if "BEST" in line]
+        if best_lines:
+            summary_part = "\n".join(best_lines[-10:])  # Últimos 10 resultados
+        else:
+            summary_part = stdout[-500:]  # Últimos 500 caracteres
+    else:
+        summary_part = stdout[-500:]  # Últimos 500 caracteres se não encontrar BEST
+    
+    try:
+        print(summary_part.strip())
+    except UnicodeEncodeError:
+        # Fallback para encoding seguro
+        print(summary_part.strip().encode('ascii', 'ignore').decode('ascii'))
     print("----------------------------------\n")
 
     errors = []
@@ -110,25 +125,45 @@ def run_test():
         label_str = expected["label_str"]
         print(f"[TESTE] Validando Período {period}d...")
 
-        # 1) Encontrar a linha com os parâmetros esperados
+        # 1) Encontrar a linha com os parâmetros esperados (novo formato: duas linhas)
         matched_line = None
-        for raw in stdout.splitlines():
+        matched_line_pct = None
+        lines_list = stdout.splitlines()
+        
+        # Procura pela linha de percentual (formato: "BEST 1400D - +600.99%")
+        period_str = f"{expected['period']}D"
+        # Usa regex para garantir que o período está exatamente na linha (não como parte de outro número)
+        period_pattern = rf"\b{expected['period']}D\b"
+        
+        for i, raw in enumerate(lines_list):
             line = clean_text(raw)
-            if label_str in line and EXPECTED_PARAMS_STR in line:
-                matched_line = line
-                break
+            # Verifica se a linha contém "BEST", o período exato e o formato de percentual
+            if "BEST" in line.upper() and "%" in line and "-" in line:
+                # Verifica se o período está exatamente na linha (não como parte de outro número)
+                if re.search(period_pattern, line, re.IGNORECASE):
+                    matched_line_pct = line
+                    # Procura a linha de detalhes nas próximas linhas (pode estar na próxima ou em até 3 linhas depois)
+                    for j in range(i + 1, min(i + 4, len(lines_list))):
+                        next_line = clean_text(lines_list[j])
+                        # Verifica se a linha contém os parâmetros esperados
+                        if EXPECTED_PARAMS_STR in next_line:
+                            matched_line = next_line
+                            break
+                    if matched_line:
+                        break
 
-        if not matched_line:
+        if not matched_line or not matched_line_pct:
             errors.append(f"({period}d) Não encontrei linha de resultado com o Label '{label_str}' E os Parâmetros '{EXPECTED_PARAMS_STR}'")
             continue
 
         print(f"[INFO] Linha {period}d encontrada:")
+        print("  " + matched_line_pct)
         print("  " + matched_line + "\n")
 
         line_errors = []
 
-        # 2) Extrair PnL do período (ex: "1400d +600.99%")
-        pnl_m = re.search(rf"{expected['period']}d ([+-]\d+\.\d+)%", matched_line)
+        # 2) Extrair PnL do período (ex: "BEST 1400D - +600.99%")
+        pnl_m = re.search(rf"{expected['period']}D\s*-\s*([+-]\d+\.\d+)%", matched_line_pct, re.IGNORECASE)
         if not pnl_m:
             line_errors.append(f"({period}d) Não foi possível extrair PnL (formato '{expected['period']}d +XX.XX%').")
         else:

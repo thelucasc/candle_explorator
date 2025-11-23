@@ -10,6 +10,8 @@ from datetime import datetime
 from multiprocessing import Pool, cpu_count
 import sys # <--- ADICIONADO PARA LER O COMANDO
 from typing import Optional, Dict, List, Tuple
+import subprocess
+import os
 
 import pandas as pd
 import numpy as np
@@ -119,6 +121,20 @@ def main():
     p.add_argument("--tp-ema-pct", type=float, default=None, nargs='+')
     p.add_argument("--tp-ema-amount", type=float, default=None, nargs='+')
     p.add_argument("--emas", type=int, default=None, nargs='+')
+    
+    # Parâmetros dos Sinais de Compra (4H/8H)
+    p.add_argument("--signal-4h8h-sma-length", type=int, default=None, nargs='+', help="SMA length para sinais 4H/8H (default: 20)")
+    p.add_argument("--signal-4h8h-pir-threshold", type=float, default=None, nargs='+', help="PIR threshold para sinais 4H/8H (default: 0.85)")
+    
+    # Parâmetros dos Sinais de Compra (1D)
+    p.add_argument("--signal-1d-sma-length", type=int, default=None, nargs='+', help="SMA length para sinais 1D (default: 20)")
+    p.add_argument("--signal-1d-trend-regime-threshold", type=float, default=None, nargs='+', help="Trend regime threshold 1D (default: 0.002)")
+    p.add_argument("--signal-1d-trend-regime-tree-threshold", type=float, default=None, nargs='+', help="Trend regime tree threshold 1D (default: 1.5)")
+    p.add_argument("--signal-1d-dist-ma-threshold", type=float, default=None, nargs='+', help="Distância da SMA threshold 1D (default: 0.03)")
+    p.add_argument("--signal-1d-rsi-length", type=int, default=None, nargs='+', help="RSI length para sinais 1D (default: 14)")
+    p.add_argument("--signal-1d-rsi-threshold", type=float, default=None, nargs='+', help="RSI threshold para sinais 1D (default: 60)")
+    p.add_argument("--signal-1d-pir-threshold-prev", type=float, default=None, nargs='+', help="PIR threshold anterior 1D (default: 0.60)")
+    p.add_argument("--signal-1d-pir-threshold-confirm", type=float, default=None, nargs='+', help="PIR threshold confirmação 1D (default: 0.40)")
 
     args = p.parse_args()
     
@@ -186,33 +202,120 @@ def main():
     default_ema_len = unique_ema_lens[0]
 
     # --- 3. (Otimização Nível 2) ---
-    print("[INFO] Otimização Nível 2: Pré-calculando Sinais 1D...")
-    # (*** USA indicators ***)
-    df1d = ind.compute_1D_cluster_signals(df1d_thin)
+    print("[INFO] Configurando parâmetros dos sinais...")
     
-    if df4h_thin is not None:
-        print("[INFO] Pré-calculando Sinais 4H...")
-        # (*** USA indicators ***)
-        df4h = ind.compute_pine_like_signals(df4h_thin)
-    else:
+    # Prepara grids para parâmetros dos sinais (usa valores padrão se não especificados)
+    signal_4h8h_sma_length_grid = args.signal_4h8h_sma_length if (args.signal_4h8h_sma_length and len(args.signal_4h8h_sma_length) > 0) else [20]
+    signal_4h8h_pir_threshold_grid = args.signal_4h8h_pir_threshold if (args.signal_4h8h_pir_threshold and len(args.signal_4h8h_pir_threshold) > 0) else [0.85]
+    
+    signal_1d_sma_length_grid = args.signal_1d_sma_length if (args.signal_1d_sma_length and len(args.signal_1d_sma_length) > 0) else [20]
+    signal_1d_trend_regime_threshold_grid = args.signal_1d_trend_regime_threshold if (args.signal_1d_trend_regime_threshold and len(args.signal_1d_trend_regime_threshold) > 0) else [0.002]
+    signal_1d_trend_regime_tree_threshold_grid = args.signal_1d_trend_regime_tree_threshold if (args.signal_1d_trend_regime_tree_threshold and len(args.signal_1d_trend_regime_tree_threshold) > 0) else [1.5]
+    signal_1d_dist_ma_threshold_grid = args.signal_1d_dist_ma_threshold if (args.signal_1d_dist_ma_threshold and len(args.signal_1d_dist_ma_threshold) > 0) else [0.03]
+    signal_1d_rsi_length_grid = args.signal_1d_rsi_length if (args.signal_1d_rsi_length and len(args.signal_1d_rsi_length) > 0) else [14]
+    signal_1d_rsi_threshold_grid = args.signal_1d_rsi_threshold if (args.signal_1d_rsi_threshold and len(args.signal_1d_rsi_threshold) > 0) else [60]
+    signal_1d_pir_threshold_prev_grid = args.signal_1d_pir_threshold_prev if (args.signal_1d_pir_threshold_prev and len(args.signal_1d_pir_threshold_prev) > 0) else [0.60]
+    signal_1d_pir_threshold_confirm_grid = args.signal_1d_pir_threshold_confirm if (args.signal_1d_pir_threshold_confirm and len(args.signal_1d_pir_threshold_confirm) > 0) else [0.40]
+    
+    # Valores únicos para pré-cálculo (quando não há múltiplos valores)
+    signal_4h8h_sma_length = signal_4h8h_sma_length_grid[0]
+    signal_4h8h_pir_threshold = signal_4h8h_pir_threshold_grid[0]
+    signal_1d_sma_length = signal_1d_sma_length_grid[0]
+    signal_1d_trend_regime_threshold = signal_1d_trend_regime_threshold_grid[0]
+    signal_1d_trend_regime_tree_threshold = signal_1d_trend_regime_tree_threshold_grid[0]
+    signal_1d_dist_ma_threshold = signal_1d_dist_ma_threshold_grid[0]
+    signal_1d_rsi_length = signal_1d_rsi_length_grid[0]
+    signal_1d_rsi_threshold = signal_1d_rsi_threshold_grid[0]
+    signal_1d_pir_threshold_prev = signal_1d_pir_threshold_prev_grid[0]
+    signal_1d_pir_threshold_confirm = signal_1d_pir_threshold_confirm_grid[0]
+    
+    print(f"[INFO] Parâmetros configurados: 4H/8H SMA={signal_4h8h_sma_length_grid}, PIR={signal_4h8h_pir_threshold_grid}")
+    print(f"[INFO] Parâmetros configurados: 1D SMA={signal_1d_sma_length_grid}, RSI={signal_1d_rsi_length_grid}/{signal_1d_rsi_threshold_grid}")
+    
+    # Verifica se há múltiplos valores para algum parâmetro (requer recálculo durante sweep)
+    has_multiple_signal_params = (
+        len(signal_4h8h_sma_length_grid) > 1 or
+        len(signal_4h8h_pir_threshold_grid) > 1 or
+        len(signal_1d_sma_length_grid) > 1 or
+        len(signal_1d_trend_regime_threshold_grid) > 1 or
+        len(signal_1d_trend_regime_tree_threshold_grid) > 1 or
+        len(signal_1d_dist_ma_threshold_grid) > 1 or
+        len(signal_1d_rsi_length_grid) > 1 or
+        len(signal_1d_rsi_threshold_grid) > 1 or
+        len(signal_1d_pir_threshold_prev_grid) > 1 or
+        len(signal_1d_pir_threshold_confirm_grid) > 1
+    )
+    
+    if has_multiple_signal_params:
+        print("[INFO] Múltiplos valores detectados para parâmetros dos sinais.")
+        print("[INFO] Sinais serão recalculados durante o sweep para cada combinação.")
+        # Guarda os DataFrames thin para recálculo posterior no worker
+        df1d = None
         df4h = None
-        
-    if df8h_thin is not None:
-        print("[INFO] Pré-calculando Sinais 8H...")
-        # (*** USA indicators ***)
-        df8h = ind.compute_pine_like_signals(df8h_thin)
-    else:
         df8h = None
-
-    print(f"[INFO] Pré-calculando EMAs para comprimentos: {unique_ema_lens}...")
-    for length in unique_ema_lens:
-        col_name = f'ema_{length}'
+    else:
+        print("[INFO] Otimização Nível 2: Pré-calculando Sinais 1D...")
+        import time as time_module
+        start_sig = time_module.time()
         # (*** USA indicators ***)
-        df1d[col_name] = ind.ema(df1d['close'], length)
-        if df4h is not None: df4h[col_name] = ind.ema(df4h['close'], length)
-        if df8h is not None: df8h[col_name] = ind.ema(df8h['close'], length)
-    
-    print("[INFO] Pré-cálculo de indicadores concluído.")
+        df1d = ind.compute_1D_cluster_signals(
+            df1d_thin,
+            sma_length=signal_1d_sma_length,
+            trend_regime_threshold=signal_1d_trend_regime_threshold,
+            trend_regime_tree_threshold=signal_1d_trend_regime_tree_threshold,
+            dist_ma_fast_threshold=signal_1d_dist_ma_threshold,
+            rsi_length=signal_1d_rsi_length,
+            rsi_threshold=signal_1d_rsi_threshold,
+            pir_threshold_prev=signal_1d_pir_threshold_prev,
+            pir_threshold_confirm=signal_1d_pir_threshold_confirm
+        )
+        print(f"[INFO] Sinais 1D calculados em {time_module.time() - start_sig:.2f}s")
+        
+        if df4h_thin is not None:
+            print("[INFO] Pré-calculando Sinais 4H...")
+            start_sig = time_module.time()
+            # (*** USA indicators ***)
+            df4h = ind.compute_pine_like_signals(
+                df4h_thin,
+                sma_length=signal_4h8h_sma_length,
+                pir_threshold=signal_4h8h_pir_threshold
+            )
+            print(f"[INFO] Sinais 4H calculados em {time_module.time() - start_sig:.2f}s")
+        else:
+            df4h = None
+            
+        if df8h_thin is not None:
+            print("[INFO] Pré-calculando Sinais 8H...")
+            start_sig = time_module.time()
+            # (*** USA indicators ***)
+            df8h = ind.compute_pine_like_signals(
+                df8h_thin,
+                sma_length=signal_4h8h_sma_length,
+                pir_threshold=signal_4h8h_pir_threshold
+            )
+            print(f"[INFO] Sinais 8H calculados em {time_module.time() - start_sig:.2f}s")
+        else:
+            df8h = None
+
+    # Calcula EMAs apenas se os sinais foram pré-calculados (não há múltiplos valores)
+    if not has_multiple_signal_params:
+        print(f"[INFO] Pré-calculando EMAs para comprimentos: {unique_ema_lens}...")
+        for length in unique_ema_lens:
+            col_name = f'ema_{length}'
+            # (*** USA indicators ***)
+            df1d[col_name] = ind.ema(df1d['close'], length)
+            if df4h is not None: df4h[col_name] = ind.ema(df4h['close'], length)
+            if df8h is not None: df8h[col_name] = ind.ema(df8h['close'], length)
+        print("[INFO] Pré-cálculo de indicadores concluído.")
+    else:
+        # Quando há múltiplos valores, calcula EMAs nos DataFrames thin
+        print(f"[INFO] Pré-calculando EMAs para comprimentos: {unique_ema_lens}...")
+        for length in unique_ema_lens:
+            col_name = f'ema_{length}'
+            df1d_thin[col_name] = ind.ema(df1d_thin['close'], length)
+            if df4h_thin is not None: df4h_thin[col_name] = ind.ema(df4h_thin['close'], length)
+            if df8h_thin is not None: df8h_thin[col_name] = ind.ema(df8h_thin['close'], length)
+        print("[INFO] Pré-cálculo de EMAs concluído (sinais serão calculados durante sweep).")
     # --- FIM DA OTIMIZAÇÃO ---
 
 
@@ -239,84 +342,159 @@ def main():
     # Se nenhuma data for passada, usa 365d e 5 anos (1825 dias)
     date_list_str = args.date if args.date is not None else ['365', '1825']
     print(f"[INFO] Rodando em modo Multi-Date para períodos: {date_list_str}")
+    
+    # Guarda a lista de datas para uso no worker
+    date_list_final = []
+    for date_str in date_list_str:
+        if date_str.lower() == 'all':
+            date_list_final.append('ALL')
+        else:
+            date_list_final.append(str(int(date_str)))
 
     bh_benchmarks = {}
     numpy_data_slices = {}
     custom_labels = [] # Lista ordenada de labels (ex: '1400', '365')
 
-    for date_str in date_list_str:
-        bh_custom_pct = 0.0
-        
-        if date_str.lower() == 'all':
-            custom_days_label_for_logger = "ALL"
-            df1d_custom = df1d 
-            df4h_custom = df4h 
-            df8h_custom = df8h 
-        
-        else:
-            try:
-                days_custom = int(date_str)
-                if days_custom <= 0: raise ValueError()
-                
-                custom_days_label_for_logger = f"{days_custom}"
-                # (*** USA data_utils ***)
-                df1d_custom = du.slice_period(df1d, days_custom)
-                
-                # (*** GUARDA: Se o slice for maior que os dados, usa o que tem ***)
-                if len(df1d_custom) < days_custom and len(df1d_custom) > 0:
-                    print(f"[AVISO] Período '{days_custom}' é maior que os dados ({len(df1d_custom)} dias). Usando max disponível.")
-                elif len(df1d_custom) == 0:
-                    print(f"[AVISO] Período '{days_custom}' não contém dados (slice vazio).")
-                
-                # (*** USA data_utils ***)
-                df4h_custom = du.cut_matching(df4h, df1d_custom)
-                df8h_custom = du.cut_matching(df8h, df1d_custom)
-
-            except ValueError:
-                print(f"[ERRO] Argumento --date inválido: '{date_str}'. Use 'all' ou um número de dias.")
-                sys.exit(1)
-        
-        # (*** GUARDA: Checa B&H e range ***)
-        if not df1d_custom.empty and 'close' in df1d_custom.columns and len(df1d_custom['close']) > 1:
-            p0 = float(df1d_custom['close'].iloc[0])
-            p1 = float(df1d_custom['close'].iloc[-1])
-            if p0 > 0:
-                bh_custom_pct = (p1 / p0 - 1.0) * 100.0
+    # Se há múltiplos valores, não prepara os slices aqui (será feito no worker)
+    if has_multiple_signal_params:
+        print("[INFO] Pulando preparação de slices NumPy (será feito no worker com sinais recalculados).")
+        # Ainda precisa preparar os slices básicos (sem sinais) para calcular B&H
+        for date_str in date_list_str:
+            if date_str.lower() == 'all':
+                custom_days_label_for_logger = "ALL"
+                df1d_custom = df1d_thin if df1d_thin is not None else pd.DataFrame()
+                df4h_custom = df4h_thin if df4h_thin is not None else None
+                df8h_custom = df8h_thin if df8h_thin is not None else None
+            else:
+                try:
+                    days_custom = int(date_str)
+                    if days_custom <= 0: raise ValueError()
+                    custom_days_label_for_logger = f"{days_custom}"
+                    df1d_custom = du.slice_period(df1d_thin, days_custom)
+                    df4h_custom = du.cut_matching(df4h_thin, df1d_custom) if df4h_thin is not None else None
+                    df8h_custom = du.cut_matching(df8h_thin, df1d_custom) if df8h_thin is not None else None
+                except ValueError:
+                    print(f"[ERRO] Argumento --date inválido: '{date_str}'. Use 'all' ou um número de dias.")
+                    sys.exit(1)
             
-            # (*** USA logging_utils ***)
-            date_range_str = lu.get_date_range_str(df1d_custom)
-            print(f"[INFO] Período '{custom_days_label_for_logger}': {date_range_str} | B&H: {bh_custom_pct:+.2f}%")
-        
-        else:
-            print(f"[AVISO] Não foi possível calcular B&H para o período '{custom_days_label_for_logger}' (dataframe vazio).")
+            # Calcula B&H apenas
+            if not df1d_custom.empty and 'close' in df1d_custom.columns and len(df1d_custom['close']) > 1:
+                p0 = float(df1d_custom['close'].iloc[0])
+                p1 = float(df1d_custom['close'].iloc[-1])
+                if p0 > 0:
+                    bh_custom_pct = (p1 / p0 - 1.0) * 100.0
+                    date_range_str = lu.get_date_range_str(df1d_custom)
+                    print(f"[INFO] Período '{custom_days_label_for_logger}': {date_range_str} | B&H: {bh_custom_pct:+.2f}%")
+                else:
+                    bh_custom_pct = 0.0
+            else:
+                bh_custom_pct = 0.0
+                print(f"[AVISO] Não foi possível calcular B&H para o período '{custom_days_label_for_logger}' (dataframe vazio).")
+            
+            bh_benchmarks[custom_days_label_for_logger] = bh_custom_pct
+            custom_labels.append(custom_days_label_for_logger)
+    else:
+        # Código original quando não há múltiplos valores
+        for date_str in date_list_str:
+            bh_custom_pct = 0.0
+            
+            if date_str.lower() == 'all':
+                custom_days_label_for_logger = "ALL"
+                df1d_custom = df1d 
+                df4h_custom = df4h 
+                df8h_custom = df8h 
+            else:
+                try:
+                    days_custom = int(date_str)
+                    if days_custom <= 0: raise ValueError()
+                    
+                    custom_days_label_for_logger = f"{days_custom}"
+                    # (*** USA data_utils ***)
+                    df1d_custom = du.slice_period(df1d, days_custom)
+                    
+                    # (*** GUARDA: Se o slice for maior que os dados, usa o que tem ***)
+                    if len(df1d_custom) < days_custom and len(df1d_custom) > 0:
+                        print(f"[AVISO] Período '{days_custom}' é maior que os dados ({len(df1d_custom)} dias). Usando max disponível.")
+                    elif len(df1d_custom) == 0:
+                        print(f"[AVISO] Período '{days_custom}' não contém dados (slice vazio).")
+                    
+                    # (*** USA data_utils ***)
+                    df4h_custom = du.cut_matching(df4h, df1d_custom)
+                    df8h_custom = du.cut_matching(df8h, df1d_custom)
 
-        
-        print(f"[INFO] Preparando arrays NumPy ({custom_days_label_for_logger})...")
-        # (*** USA core_engine ***)
-        numpy_data_slices[custom_days_label_for_logger] = ce.prepare_numpy_data(
-            df1d_custom, df4h_custom, df8h_custom, unique_ema_lens
-        )
-        
-        bh_benchmarks[custom_days_label_for_logger] = bh_custom_pct
-        custom_labels.append(custom_days_label_for_logger)
-        
-        del df1d_custom, df4h_custom, df8h_custom
+                except ValueError:
+                    print(f"[ERRO] Argumento --date inválido: '{date_str}'. Use 'all' ou um número de dias.")
+                    sys.exit(1)
+            
+            # (*** GUARDA: Checa B&H e range ***)
+            if not df1d_custom.empty and 'close' in df1d_custom.columns and len(df1d_custom['close']) > 1:
+                p0 = float(df1d_custom['close'].iloc[0])
+                p1 = float(df1d_custom['close'].iloc[-1])
+                if p0 > 0:
+                    bh_custom_pct = (p1 / p0 - 1.0) * 100.0
+                
+                # (*** USA logging_utils ***)
+                date_range_str = lu.get_date_range_str(df1d_custom)
+                print(f"[INFO] Período '{custom_days_label_for_logger}': {date_range_str} | B&H: {bh_custom_pct:+.2f}%")
+            
+            else:
+                print(f"[AVISO] Não foi possível calcular B&H para o período '{custom_days_label_for_logger}' (dataframe vazio).")
+
+            
+            print(f"[INFO] Preparando arrays NumPy ({custom_days_label_for_logger})...")
+            # (*** USA core_engine ***)
+            numpy_data_slices[custom_days_label_for_logger] = ce.prepare_numpy_data(
+                df1d_custom, df4h_custom, df8h_custom, unique_ema_lens
+            )
+            
+            bh_benchmarks[custom_days_label_for_logger] = bh_custom_pct
+            custom_labels.append(custom_days_label_for_logger)
+            
+            del df1d_custom, df4h_custom, df8h_custom
 
     
     worker_data_payload.update({
         'date_list': custom_labels,
         'numpy_data_slices': numpy_data_slices,
-        'bh_benchmarks': bh_benchmarks
+        'bh_benchmarks': bh_benchmarks,
+        'has_multiple_signal_params': has_multiple_signal_params,
+        'unique_ema_lens': unique_ema_lens
     })
+    
+    # Se há múltiplos valores, guarda os DataFrames thin por período para recálculo no worker
+    if has_multiple_signal_params:
+        worker_data_payload['df_thin_slices'] = {}
+        for date_label in custom_labels:
+            if date_label == 'ALL':
+                worker_data_payload['df_thin_slices'][date_label] = {
+                    'df1d_thin': df1d_thin,
+                    'df4h_thin': df4h_thin,
+                    'df8h_thin': df8h_thin
+                }
+            else:
+                days_custom = int(date_label)
+                df1d_custom_thin = du.slice_period(df1d_thin, days_custom)
+                df4h_custom_thin = du.cut_matching(df4h_thin, df1d_custom_thin) if df4h_thin is not None else None
+                df8h_custom_thin = du.cut_matching(df8h_thin, df1d_custom_thin) if df8h_thin is not None else None
+                worker_data_payload['df_thin_slices'][date_label] = {
+                    'df1d_thin': df1d_custom_thin,
+                    'df4h_thin': df4h_custom_thin,
+                    'df8h_thin': df8h_custom_thin
+                }
+        print("[INFO] DataFrames thin guardados para recálculo de sinais no worker.")
+    
     # (*** FIM DA MUDANÇA v1.6 ***)
     
-    del df1d, df4h, df8h, df1d_thin, df4h_thin, df8h_thin
+    if not has_multiple_signal_params:
+        del df1d, df4h, df8h
+    del df1d_thin, df4h_thin, df8h_thin
     print("[INFO] Preparação de dados NumPy concluída. DataFrames limpos da memória.")
 
 
     # --- 5. Preparar Combinações ---
     
-    # (*** MUDANÇA v1.7: 16 parâmetros ***)
+    # (*** CORREÇÃO: Sempre inclui todos os parâmetros no produto cartesiano, mesmo com apenas 1 valor ***)
+    # Isso mantém a consistência e permite que o usuário adicione mais valores depois sem mudar a estrutura
     combos = list(itertools.product(
         grid_b4, grid_s4,
         grid_b8, grid_s8,
@@ -326,11 +504,23 @@ def main():
         sl_down_pct_grid,     
         sl_down_amt_grid,     
         tp_grid,
-        tp_after_pct_grid,    # <--- NOVO
-        tp_sell_pct_grid,     # <--- NOVO
+        tp_after_pct_grid,
+        tp_sell_pct_grid,
         tp_ema_pct_grid,
         tp_ema_amt_grid,
-        ema_len_grid 
+        ema_len_grid,
+        # Parâmetros dos sinais (4H/8H) - sempre incluídos
+        signal_4h8h_sma_length_grid,
+        signal_4h8h_pir_threshold_grid,
+        # Parâmetros dos sinais (1D) - sempre incluídos
+        signal_1d_sma_length_grid,
+        signal_1d_trend_regime_threshold_grid,
+        signal_1d_trend_regime_tree_threshold_grid,
+        signal_1d_dist_ma_threshold_grid,
+        signal_1d_rsi_length_grid,
+        signal_1d_rsi_threshold_grid,
+        signal_1d_pir_threshold_prev_grid,
+        signal_1d_pir_threshold_confirm_grid
     ))
     
     total = len(combos) 
@@ -441,9 +631,10 @@ def main():
         run_mode_res = res[0] # Deve ser "multi-date"
         res_data = res[1]
         
-        # (*** MUDANÇA v1.7: 16 parâmetros ***)
-        params_tuple = res_data[0:16]
-        results_by_date = res_data[16] # Dicionário: {'1400': (pct, metrics), '365': (pct, metrics)}
+        # (*** CORREÇÃO: Sempre 26 parâmetros (16 originais + 10 parâmetros dos sinais) ***)
+        # Os parâmetros dos sinais sempre estão no produto cartesiano, mesmo com apenas 1 valor
+        params_tuple = res_data[0:26]
+        results_by_date = res_data[26] # Dicionário: {'1400': (pct, metrics), '365': (pct, metrics)}
         
         # --- Tracking e Lógica de Print ---
         pnl_strs = []
@@ -471,6 +662,7 @@ def main():
             pnl_strs.append(f"{date_label}{label_suffix} {pct:+.2f}%")
             
             # Atualiza Best/Worst
+            # (*** CORREÇÃO: Salva todos os parâmetros (16 ou 26) para incluir parâmetros dos sinais quando disponíveis ***)
             if pct > best_pnl_by_date[date_label]:
                 best_pnl_by_date[date_label] = pct
                 best_results_by_date[date_label] = (*params_tuple, pct, metrics)
@@ -502,11 +694,11 @@ def main():
         
         # --- Printar ---
         
-        # (*** MUDANÇA v1.7: 16 parâmetros ***)
+        # (*** MUDANÇA v1.7: 16 parâmetros (sempre os primeiros 16, mesmo com múltiplos sinais) ***)
         b4,s4,b8,s8,b1,s1, \
         sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
         tp_p, tp_after_p, tp_sell_p, \
-        tp_ema_pct, tp_ema_amt, ema_len = params_tuple
+        tp_ema_pct, tp_ema_amt, ema_len = params_tuple[0:16]
         
         sl_up_str = f"SL-UP {sl_up_p:.1f}%@{sl_up_amt:.0f}%" if sl_up_p is not None else "SL-UP None"
         sl_down_str = f"SL-DN {sl_down_p:.1f}%@{sl_down_amt:.0f}%" if sl_down_p is not None else "SL-DN None"

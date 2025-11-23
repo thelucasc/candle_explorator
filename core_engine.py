@@ -118,11 +118,19 @@ def init_worker(data_payload):
 
 
 def run_one_combo(combo):
-    # (*** MUDANÇA v1.7: Unpack de 16 params ***)
+    # (*** CORREÇÃO: Sempre faz unpack de 26 parâmetros (16 originais + 10 parâmetros dos sinais) ***)
+    # Os parâmetros dos sinais sempre estão no produto cartesiano, mesmo com apenas 1 valor
+    has_multiple_signal_params = g_data.get('has_multiple_signal_params', False)
+    
+    # Sempre 26 parâmetros: 16 originais + 10 parâmetros dos sinais
     b4, s4, b8, s8, b1, s1, \
     sl_up, sl_up_amt, sl_down, sl_down_amt, \
     tp, tp_after, tp_sell, \
-    tp_ema_pct, tp_ema_amt, ema_len = combo
+    tp_ema_pct, tp_ema_amt, ema_len, \
+    sig_4h8h_sma_len, sig_4h8h_pir_th, \
+    sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
+    sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
+    sig_1d_pir_prev, sig_1d_pir_confirm = combo
     
     common_params = g_data['common_params']
     
@@ -162,7 +170,60 @@ def run_one_combo(combo):
     results_by_date = {}
 
     for date_label in date_list:
-        np_data = numpy_data_slices.get(date_label) 
+        # Se há múltiplos valores para parâmetros dos sinais, recalcula os sinais
+        if has_multiple_signal_params:
+            # Importa indicators para recalcular sinais
+            import indicators as ind
+            
+            # Pega os DataFrames thin para este período
+            df_thin_slices = g_data.get('df_thin_slices', {})
+            thin_data = df_thin_slices.get(date_label)
+            
+            if thin_data is None:
+                results_by_date[date_label] = (0.0, (0,) * 23)
+                continue
+            
+            df1d_thin = thin_data['df1d_thin']
+            df4h_thin = thin_data['df4h_thin']
+            df8h_thin = thin_data['df8h_thin']
+            
+            # Recalcula sinais com os parâmetros desta combinação
+            df1d = ind.compute_1D_cluster_signals(
+                df1d_thin,
+                sma_length=int(sig_1d_sma_len),
+                trend_regime_threshold=float(sig_1d_trend_reg_th),
+                trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
+                dist_ma_fast_threshold=float(sig_1d_dist_ma_th),
+                rsi_length=int(sig_1d_rsi_len),
+                rsi_threshold=float(sig_1d_rsi_th),
+                pir_threshold_prev=float(sig_1d_pir_prev),
+                pir_threshold_confirm=float(sig_1d_pir_confirm)
+            )
+            
+            if df4h_thin is not None:
+                df4h = ind.compute_pine_like_signals(
+                    df4h_thin,
+                    sma_length=int(sig_4h8h_sma_len),
+                    pir_threshold=float(sig_4h8h_pir_th)
+                )
+            else:
+                df4h = None
+                
+            if df8h_thin is not None:
+                df8h = ind.compute_pine_like_signals(
+                    df8h_thin,
+                    sma_length=int(sig_4h8h_sma_len),
+                    pir_threshold=float(sig_4h8h_pir_th)
+                )
+            else:
+                df8h = None
+            
+            # Prepara arrays NumPy com os sinais recalculados
+            unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
+            np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
+        else:
+            # Usa os arrays NumPy pré-calculados
+            np_data = numpy_data_slices.get(date_label)
         
         if np_data is None or np_data['empty']:
             # (*** MUDANÇA v1.9: 23 métricas ***)
