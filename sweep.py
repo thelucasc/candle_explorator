@@ -403,11 +403,9 @@ def main():
     # (*** CORREÇÃO: Lógica de "winners" restaurada ***)
     best_logged_winner_pnl_by_date = {label: -float('inf') for label in custom_labels}
     
-    sample_results = []
-    
     # --- 7. Função de Callback (para printar e salvar) ---
     def handle_result(res):
-        nonlocal processed, valid_results_count, sample_results
+        nonlocal processed, valid_results_count
         nonlocal best_results_by_date, best_pnl_by_date, worst_results_by_date, worst_pnl_by_date
         nonlocal best_logged_winner_pnl_by_date
         
@@ -480,14 +478,6 @@ def main():
                 worst_pnl_by_date[date_label] = pct
                 worst_results_by_date[date_label] = (*params_tuple, pct, metrics)
 
-        # Amostragem
-        if len(sample_results) < 10:
-            sample_results.append(res_data) # Salva o res_data completo
-        else:
-            j = random.randint(0, valid_results_count - 1)
-            if j < 10:
-                sample_results[j] = res_data
-
         # --- Filtros de Print ---
         if args.print_mode == "winners":
             if not is_any_winner:
@@ -531,7 +521,6 @@ def main():
         # (*** MUDANÇA v3.1: Log TXT removido do handle_result ***)
             
         # 1. Monta a string apenas para o console
-        mark_console = lu.GREEN if is_any_winner else ""
         label_console_str = "[+] WIN" if is_any_winner else "[ ] RUN"
 
         base_str = (
@@ -539,7 +528,7 @@ def main():
             f"{tp_ema_str} | {tbrs_str} | PnL: [ {' | '.join(pnl_strs)} ]"
         )
         
-        result_str_console = f"{mark_console}{label_console_str:<10} {base_str}{lu.RESET}"
+        result_str_console = f"{label_console_str:<10} {base_str}"
         
         # 2. Printa no console
         print(result_str_console)
@@ -574,70 +563,27 @@ def main():
     dur = datetime.now() - start
     print(f"\nConcluído em {dur}. Resultados salvos em -> {log_file_path}")
     
-    print("\n" + "="*80)
-    print("===== SUMÁRIO DA EXECUÇÃO =====")
-    print("="*80 + "\n")
-    
     # (*** MUDANÇA v3.1: Lista para guardar o sumário do log ***)
     log_summary_lines_clean = [] # Armazena linhas limpas para o TXT
     
     date_list_final = worker_data_payload['date_list']
     
+    # Printa apenas os melhores resultados, sem cabeçalhos
     for date_label in date_list_final:
-        label_periodo = f"{date_label} Dias" if date_label != "ALL" else "ALL DATA"
         label_short = f"BEST {date_label}D" if date_label != "ALL" else "BEST ALL"
         
         best_res = best_results_by_date[date_label]
         
-        header_str = f"--- MELHOR RESULTADO (por PnL {label_periodo}) ---"
-        print(header_str) # Printa no console
-        
         if best_res:
-            # Linha para console (com cor)
-            console_line = lu.format_result_line_custom(best_res, f"[{label_short}]", lu.GREEN, date_label)
-            print(console_line)
+            # Formata em duas linhas: percentual na primeira, detalhes na segunda
+            lines = lu.format_result_line_custom(best_res, f"[{label_short}]", "", date_label)
+            # Printa as duas linhas
+            for line in lines:
+                print(line)
             
-            # Linha para log (sem cor)
-            log_line_clean = lu.format_result_line_custom(best_res, f"[{label_short}]", "", date_label)
-            log_summary_lines_clean.append(log_line_clean) # Adiciona à lista
-            
-        else:
-            no_result_str = f"Nenhum resultado válido foi encontrado para '{label_periodo}'."
-            print(no_result_str)
-
-    # (*** LOG DE SL REMOVIDO ***)
-            
-    # --- Pior Resultado (para a primeira data) ---
-    first_date_label = date_list_final[0]
-    worst_res_for_log = worst_results_by_date[first_date_label]
-    if worst_res_for_log:
-        label_periodo = f"{first_date_label} Dias" if first_date_label != "ALL" else "ALL DATA"
-        worst_label_short = f"WORST {first_date_label}D" if first_date_label != "ALL" else "WORST ALL"
-        print(f"\n--- PIOR RESULTADO (por PnL {label_periodo}) ---")
-        # (*** USA logging_utils ***)
-        print(lu.format_result_line_custom(worst_res_for_log, f"[{worst_label_short}]", "", first_date_label))
-
-    # --- Amostras Aleatórias ---
-    print("\n--- 10 AMOSTRAS ALEATÓRIAS (Resultados do primeiro período) ---")
-    if sample_results:
-        for i, res in enumerate(sample_results):
-            # res = (*combo, results_by_date)
-            # Precisamos extrair o resultado do primeiro período para formatar
-            # (*** MUDANÇA v1.7: 16 parâmetros ***)
-            params = res[0:16]
-            results_dict = res[16]
-            
-            # (*** GUARDA: Garante que a amostra aleatória tenha dados para este período ***)
-            if first_date_label in results_dict:
-                pct, metrics = results_dict[first_date_label]
-                
-                # Recria o tuplo de resultado único para a função de formatação
-                single_result_tuple = (*params, pct, metrics)
-                # (*** USA logging_utils ***)
-                print(lu.format_result_line_custom(single_result_tuple, f"[S {i+1}]", "", first_date_label))
-    else:
-        print("Nenhuma amostra foi coletado.")
-    
+            # Para o log, salva ambas as linhas
+            if len(lines) >= 2:
+                log_summary_lines_clean.append(f"{lines[0]}\n  {lines[1]}") # Adiciona ambas as linhas
     
     # (*** MUDANÇA v3.1: Escreve o log final de vencedores no arquivo ***)
     try:
@@ -660,8 +606,6 @@ def main():
             
     except Exception as e:
         print(f"\n[ERRO AO SALVAR LOG FINAL] Não foi possível escrever em {log_file_path}: {e}\n")
-
-    print("\n" + "="*80)
 
     
 if __name__ == "__main__":

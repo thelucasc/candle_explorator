@@ -110,7 +110,9 @@ def format_result_line_standard(res, label, mark):
         return f"[ERRO AO FORMATAR LINHA: {e}] {res}"
 
 def format_result_line_custom(res, label, mark, days_label):
-    """Formata uma linha de resultado para o modo custom (--date)"""
+    """Formata uma linha de resultado para o modo custom (--date)
+    Retorna uma lista com duas linhas: [linha_percentual, linha_detalhes]
+    """
     try:
         # (*** MUDANÇA v1.6: Unpack de 16 params ***)
         b4,s4,b8,s8,b1,s1, \
@@ -148,10 +150,16 @@ def format_result_line_custom(res, label, mark, days_label):
             f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs}]" # <--- MUDANÇA (TBRS)
         )
         
-        # Adiciona 'd' apenas se o label não for 'ALL'
-        label_periodo = f"{days_label}d" if days_label != "ALL" else "ALL"
+        # Remove colchetes do label se presente (ex: "[BEST 1400D]" -> "BEST 1400D")
+        clean_label = label.replace("[", "").replace("]", "")
         
-        return (f"{mark}{label:<10} B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} | "
-                f"{label_periodo} {pct_custom:+.2f}% {metrics_str}{RESET}")
+        # Linha 1: Percentual (formato: "BEST 1400D - +100.00%")
+        # O label já contém o período, então não precisa adicionar novamente
+        linha1 = f"{clean_label} - {pct_custom:+.2f}%"
+        
+        # Linha 2: Detalhes (formato: "B/S (4H ...) | ...")
+        linha2 = f"B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} | {metrics_str}"
+        
+        return [linha1, linha2]
     except Exception as e:
-        return f"[ERRO AO FORMATAR LINHA: {e}] {res}"
+        return [f"[ERRO AO FORMATAR LINHA: {e}]", str(res)]
