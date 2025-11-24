@@ -54,13 +54,14 @@ def _run_numba_loop(
     run_stops_on_4h: bool,
     run_stops_on_8h: bool,
     two_bar_reversal_stop: bool, # (*** MUDANÇA v1.9: TBRS ***)
+    short_on_stop: bool, # (*** NOVO ***)
     
     # Output array (para ser preenchido)
     equity_out: np.ndarray 
-) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int]: # <--- MUDANÇA v1.9 (23 métricas) 
+) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int]: # <--- MUDANÇA v1.10 (24 métricas) 
     """
     Este é o loop principal, otimizado pelo Numba.
-    (v5.30) Retorna uma tupla de 23 contadores de transações.
+    (v5.30) Retorna uma tupla de 24 contadores de transações.
     """
     
     # --- Setup (sem dataclasses) ---
@@ -84,6 +85,7 @@ def _run_numba_loop(
     sell_actions_tp_fixed = 0
     sell_actions_tp_after = 0 
     sell_actions_tp_ema = 0
+    short_actions = 0 # (*** NOVO: Contador de Shorts ***)
     
     buy_actions_4h = 0; buy_actions_8h = 0; buy_actions_1d = 0
     sell_actions_4h = 0; sell_actions_8h = 0; sell_actions_1d = 0
@@ -123,7 +125,6 @@ def _run_numba_loop(
         px = prices[i]
         low = lows[i] # (*** MUDANÇA v1.9: TBRS ***)
         ema_val = ema_values[i] 
-        
         if px <= 0.0:
             if i > 0:
                 equity_out[i] = equity_out[i-1] 
@@ -137,6 +138,17 @@ def _run_numba_loop(
         is_buy_1d = buy_1d_sig[i] and buy1d_pct > 0.0
         
         is_any_buy_signal = is_buy_4h or is_buy_8h or is_buy_1d
+        
+        # (*** NOVO: Fechar Short se houver sinal de compra ***)
+        if is_any_buy_signal and qty < -1e-9:
+             buy_back_qty = -qty
+             gross_buy = buy_back_qty * px
+             net_buy_cost = gross_buy + (gross_buy * commission_rate)
+             cash -= net_buy_cost
+             qty = 0.0
+             avg_cost = 0.0; last_purchase_price = 0.0
+             last_signal_price = 0.0; tp_after_base_price = 0.0
+             tbrs_4h_low = 0.0; tbrs_8h_low = 0.0; tbrs_1d_low = 0.0
         
         if is_any_buy_signal:
             last_signal_price = px
@@ -166,6 +178,14 @@ def _run_numba_loop(
                     sell_actions_tbrs += 1
                 
                 tbrs_4h_low = 0.0 # Desarma (só checa uma vez)
+                
+                if short_on_stop:
+                    short_qty = cash / px
+                    gross_short = short_qty * px
+                    net_short = gross_short - (gross_short * commission_rate)
+                    cash += net_short
+                    qty -= short_qty
+                    short_actions += 1
 
             # Checa 8H TBRS (só roda no candle 8H)
             if tbrs_8h_low > 0.0 and is_8h_candle_np[i]:
@@ -181,6 +201,14 @@ def _run_numba_loop(
                 
                 tbrs_8h_low = 0.0 # Desarma
 
+                if short_on_stop:
+                    short_qty = cash / px
+                    gross_short = short_qty * px
+                    net_short = gross_short - (gross_short * commission_rate)
+                    cash += net_short
+                    qty -= short_qty
+                    short_actions += 1
+
             # Checa 1D TBRS (só roda no candle 1D)
             if tbrs_1d_low > 0.0 and is_1d_candle_np[i]:
                 if px < tbrs_1d_low and qty > 0.0: # Checa qty de novo
@@ -194,6 +222,14 @@ def _run_numba_loop(
                     sell_actions_tbrs += 1
                 
                 tbrs_1d_low = 0.0 # Desarma
+
+                if short_on_stop:
+                    short_qty = cash / px
+                    gross_short = short_qty * px
+                    net_short = gross_short - (gross_short * commission_rate)
+                    cash += net_short
+                    qty -= short_qty
+                    short_actions += 1
         # --- (*** FIM DA MUDANÇA v1.9 ***) ---
 
 
@@ -235,6 +271,14 @@ def _run_numba_loop(
                                 tp_after_base_price = 0.0
                                 # (*** MUDANÇA v1.9: Desarma TBRS se sair por SL ***)
                                 tbrs_4h_low = 0.0; tbrs_8h_low = 0.0; tbrs_1d_low = 0.0
+                                
+                                if short_on_stop:
+                                    short_qty = cash / px
+                                    gross_short = short_qty * px
+                                    net_short = gross_short - (gross_short * commission_rate)
+                                    cash += net_short
+                                    qty -= short_qty
+                                    short_actions += 1
                 else:
                     # --- LÓGICA SL "DOWN" (Abaixo/Igual EMA, ou EMA == 0) ---
                     if use_sl_down:
@@ -260,6 +304,14 @@ def _run_numba_loop(
                                 tp_after_base_price = 0.0
                                 # (*** MUDANÇA v1.9: Desarma TBRS se sair por SL ***)
                                 tbrs_4h_low = 0.0; tbrs_8h_low = 0.0; tbrs_1d_low = 0.0
+
+                                if short_on_stop:
+                                    short_qty = cash / px
+                                    gross_short = short_qty * px
+                                    net_short = gross_short - (gross_short * commission_rate)
+                                    cash += net_short
+                                    qty -= short_qty
+                                    short_actions += 1
 
 
             # 1b. Take-profit (After %)
@@ -480,5 +532,6 @@ def _run_numba_loop(
         buy_ignored_4h, buy_ignored_8h, buy_ignored_1d,
         sell_ignored_4h, sell_ignored_8h, sell_ignored_1d,
         sell_actions_sl, sell_actions_tp_fixed, sell_actions_tp_after, sell_actions_tp_ema,
-        sell_actions_tbrs # <--- NOVO
+        sell_actions_tbrs,
+        short_actions # <--- NOVO
     )

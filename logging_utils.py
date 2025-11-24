@@ -74,16 +74,16 @@ def format_result_line_standard(res, label, mark):
         pct365 = res[16]      # <--- MUDANÇA DE [14]
         metrics_365 = res[17] # <--- MUDANÇA DE [15]
         
-        # (*** MUDANÇA v1.9: 23 métricas ***)
+        # (*** MUDANÇA v1.10: 24 métricas ***)
         b4h_e, b8h_e, b1d_e, s4h_e, s8h_e, s1d_e, \
         b4h_s, b8h_s, b1d_s, s4h_s, s8h_s, s1d_s, \
         b4h_i, b8h_i, b1d_i, s4h_i, s8h_i, s1d_i, \
-        sl, tp, tp_after, ema, tbrs = metrics_365[0:23] 
+        sl, tp, tp_after, ema, tbrs, shorts = metrics_365[0:24] 
         
         metrics_365_str = (
             f"[B 4H:{b4h_e}/{b4h_s}({b4h_i}) 8H:{b8h_e}/{b8h_s}({b8h_i}) 1D:{b1d_e}/{b1d_s}({b1d_i}) | "
             f"S(Sig) 4H:{s4h_e}/{s4h_s}({s4h_i}) 8H:{s8h_e}/{s8h_s}({s8h_i}) 1D:{s1d_e}/{s1d_s}({s1d_i}) | "
-            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs}]" # <--- MUDANÇA (TBRS)
+            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs} Shorts:{shorts}]" # <--- MUDANÇA (Shorts)
         )
 
         # --- Métricas 5Y ---
@@ -91,16 +91,16 @@ def format_result_line_standard(res, label, mark):
         metrics_5y = res[19]  # <--- MUDANÇA DE [17]
         # (*** FIM DA MUDANÇA ***)
         
-        # (*** MUDANÇA v1.9: 23 métricas ***)
+        # (*** MUDANÇA v1.10: 24 métricas ***)
         b4h_e, b8h_e, b1d_e, s4h_e, s8h_e, s1d_e, \
         b4h_s, b8h_s, b1d_s, s4h_s, s8h_s, s1d_s, \
         b4h_i, b8h_i, b1d_i, s4h_i, s8h_i, s1d_i, \
-        sl, tp, tp_after, ema, tbrs = metrics_5y[0:23]
+        sl, tp, tp_after, ema, tbrs, shorts = metrics_5y[0:24]
         
         metrics_5y_str = (
             f"[B 4H:{b4h_e}/{b4h_s}({b4h_i}) 8H:{b8h_e}/{b8h_s}({b8h_i}) 1D:{b1d_e}/{b1d_s}({b1d_i}) | "
             f"S(Sig) 4H:{s4h_e}/{s4h_s}({s4h_i}) 8H:{s8h_e}/{s8h_s}({s8h_i}) 1D:{s1d_e}/{s1d_s}({s1d_i}) | "
-            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs}]" # <--- MUDANÇA (TBRS)
+            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs} Shorts:{shorts}]" # <--- MUDANÇA (Shorts)
         )
         
         return (f"{mark}{label:<10} B/S (4H {b4}/{s4} | 8H {b8}/{s8} | 1D {b1}/{s1}) | {sl_str} | {tp_str} | {tp_after_str} | {tp_ema_str} | "
@@ -177,16 +177,16 @@ def format_result_line_custom(res, label, mark, days_label):
                 f"PIR{sig_1d_pir_prev:.2f}/{sig_1d_pir_confirm:.2f}"
             )
         
-        # (*** MUDANÇA v1.9: 23 métricas ***)
+        # (*** MUDANÇA v1.10: 24 métricas ***)
         b4h_e, b8h_e, b1d_e, s4h_e, s8h_e, s1d_e, \
         b4h_s, b8h_s, b1d_s, s4h_s, s8h_s, s1d_s, \
         b4h_i, b8h_i, b1d_i, s4h_i, s8h_i, s1d_i, \
-        sl, tp, tp_after, ema, tbrs = metrics_custom[0:23]
+        sl, tp, tp_after, ema, tbrs, shorts = metrics_custom[0:24]
 
         metrics_str = (
             f"[B 4H:{b4h_e}/{b4h_s}({b4h_i}) 8H:{b8h_e}/{b8h_s}({b8h_i}) 1D:{b1d_e}/{b1d_s}({b1d_i}) | "
             f"S(Sig) 4H:{s4h_e}/{s4h_s}({s4h_i}) 8H:{s8h_e}/{s8h_s}({s8h_i}) 1D:{s1d_e}/{s1d_s}({s1d_i}) | "
-            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs}]" # <--- MUDANÇA (TBRS)
+            f"S(Pasv):[SL:{sl} TP:{tp} TP-A:{tp_after} EMA:{ema} TBRS:{tbrs} Shorts:{shorts}]" # <--- MUDANÇA (Shorts)
         )
         
         # Remove colchetes do label se presente (ex: "[BEST 1400D]" -> "BEST 1400D")

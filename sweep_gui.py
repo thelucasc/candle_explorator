@@ -12,6 +12,7 @@ import threading
 import os
 import re
 import shlex
+import json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -29,9 +30,12 @@ class SweepGUI:
         
         # Criar interface
         self.create_widgets()
-        # Carrega o último comando após criar os widgets
-        self.root.after(100, self.load_last_command)  # Pequeno delay para garantir que widgets estão prontos
+        # Carrega configurações salvas ou o último comando
+        self.root.after(100, self.load_settings)
         self.load_log_file()
+        
+        # Salvar configurações ao fechar
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
     def create_widgets(self):
         # Frame principal com paned window para dividir em duas partes
@@ -304,6 +308,7 @@ class SweepGUI:
         add_param("Stops On Candle:", "entry", "stops_on_candle", "1D")
         add_param("Stop Loss Signal:", "checkbox", "stop_loss_signal", False)
         add_param("Two Bar Reversal Stop:", "checkbox", "two_bar_reversal_stop", False)
+        add_param("Short on Stop:", "checkbox", "short_on_stop", False)
     
     def create_signal_parameter_widgets(self, parent):
         """Cria os widgets de parâmetros dos sinais de compra"""
@@ -454,7 +459,7 @@ class SweepGUI:
                     arg_name = arg[2:].replace("-", "_")
                     
                     # Flags booleanos (não têm valor)
-                    boolean_flags = ["stop_loss_signal", "two_bar_reversal_stop"]
+                    boolean_flags = ["stop_loss_signal", "two_bar_reversal_stop", "short_on_stop"]
                     if arg_name in boolean_flags:
                         if arg_name in self.vars:
                             self.vars[arg_name].set(True)
@@ -518,6 +523,51 @@ class SweepGUI:
             # import traceback
             # traceback.print_exc()
             pass  # Silenciosamente ignora erros de parse
+    
+    def save_config(self):
+        """Salva as configurações atuais em um arquivo JSON"""
+        config = {}
+        for name, var in self.vars.items():
+            if var:
+                config[name] = var.get()
+        
+        try:
+            with open("sweep_config.json", "w", encoding="utf-8") as f:
+                json.dump(config, f, indent=4)
+            # print("[DEBUG] Configurações salvas em sweep_config.json")
+        except Exception as e:
+            print(f"[ERRO] Falha ao salvar configurações: {e}")
+
+    def load_config(self) -> bool:
+        """Carrega configurações do arquivo JSON. Retorna True se sucesso."""
+        if not os.path.exists("sweep_config.json"):
+            return False
+            
+        try:
+            with open("sweep_config.json", "r", encoding="utf-8") as f:
+                config = json.load(f)
+            
+            for name, value in config.items():
+                if name in self.vars and self.vars[name]:
+                    # Tratamento especial para booleanos salvos como string/int
+                    if isinstance(self.vars[name], tk.BooleanVar):
+                        self.vars[name].set(bool(value))
+                    else:
+                        self.vars[name].set(str(value))
+            return True
+        except Exception as e:
+            print(f"[ERRO] Falha ao carregar configurações: {e}")
+            return False
+
+    def load_settings(self):
+        """Tenta carregar do JSON, se falhar, tenta do log"""
+        if not self.load_config():
+            self.load_last_command()
+
+    def on_close(self):
+        """Handler para fechamento da janela"""
+        self.save_config()
+        self.root.destroy()
     
     def build_command(self) -> List[str]:
         """Constrói o comando para executar o sweep.py"""
@@ -622,6 +672,8 @@ class SweepGUI:
             cmd.append("--stop-loss-signal")
         if self.vars["two_bar_reversal_stop"].get():
             cmd.append("--two-bar-reversal-stop")
+        if self.vars["short_on_stop"].get():
+            cmd.append("--short-on-stop")
         
         return cmd
     
@@ -630,6 +682,9 @@ class SweepGUI:
         if self.is_running:
             messagebox.showwarning("Aviso", "Já existe uma execução em andamento!")
             return
+        
+        # Salva configurações antes de executar
+        self.save_config()
         
         cmd = self.build_command()
         self.log_text.delete(1.0, tk.END)

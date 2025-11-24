@@ -56,6 +56,7 @@ EXPECTED_RESULTS = [
         "expected_tp_after": 0,
         "expected_ema": 0,
         "expected_tbrs": 0,       # <--- Deve ser 0
+        "expected_shorts": 0,     # <--- Deve ser 0
     },
     {
         "period": "400",
@@ -66,6 +67,7 @@ EXPECTED_RESULTS = [
         "expected_tp_after": 0,
         "expected_ema": 0,
         "expected_tbrs": 0,       # <--- Deve ser 0
+        "expected_shorts": 0,     # <--- Deve ser 0
     }
 ]
 
@@ -172,18 +174,19 @@ def run_test():
                 line_errors.append(f"({period}d) PnL divergente! Esperado {expected['expected_pnl']}%, encontrado {pnl_val}% (±{PNL_ATOL}).")
 
         # 3) Extrair contagens passivas
-        # (*** MUDANÇA: Regex atualizada para ler as 5 métricas ***)
-        c_m = re.search(r"S\(Pasv\):\[SL:(\d+) TP:(\d+) TP-A:(\d+) EMA:(\d+) TBRS:(\d+)\]", matched_line)
+        # (*** MUDANÇA: Regex atualizada para ler as 6 métricas ***)
+        c_m = re.search(r"S\(Pasv\):\[SL:(\d+) TP:(\d+) TP-A:(\d+) EMA:(\d+) TBRS:(\d+) Shorts:(\d+)\]", matched_line)
         
         if not c_m:
             # (*** MUDANÇA: Mensagem de erro atualizada ***)
-            line_errors.append(f"({period}d) Não foi possível extrair S(Pasv) no formato 'SL:XX TP:YY TP-A:ZZ EMA:WW TBRS:ZZ'.")
+            line_errors.append(f"({period}d) Não foi possível extrair S(Pasv) no formato 'SL:XX TP:YY TP-A:ZZ EMA:WW TBRS:VV Shorts:UU'.")
         else:
             sl_cnt = int(c_m.group(1))
             tp_cnt = int(c_m.group(2))
             tp_after_cnt = int(c_m.group(3))
             ema_cnt = int(c_m.group(4))
-            tbrs_cnt = int(c_m.group(5)) # <--- Nova métrica lida
+            tbrs_cnt = int(c_m.group(5))
+            shorts_cnt = int(c_m.group(6)) # <--- Nova métrica lida
             
             if sl_cnt != expected["expected_sl"]:
                 line_errors.append(f"({period}d) SL Count divergente! Esperado {expected['expected_sl']}, encontrado {sl_cnt}.")
@@ -199,14 +202,17 @@ def run_test():
             # (*** MUDANÇA: Validação da nova métrica (deve ser 0) ***)
             if tbrs_cnt != expected["expected_tbrs"]:
                 line_errors.append(f"({period}d) TBRS Count divergente! Esperado {expected['expected_tbrs']}, encontrado {tbrs_cnt}.")
+            
+            if shorts_cnt != expected["expected_shorts"]:
+                line_errors.append(f"({period}d) Shorts Count divergente! Esperado {expected['expected_shorts']}, encontrado {shorts_cnt}.")
         
         if line_errors:
             errors.extend(line_errors)
         else:
-            # (*** MUDANÇA: Log de sucesso atualizado para 5 métricas ***)
+            # (*** MUDANÇA: Log de sucesso atualizado para 6 métricas ***)
             success_details.append(
                 f"  - Período {period}d: PnL {expected['expected_pnl']}% (±{PNL_ATOL}) | "
-                f"S(Pasv) SL/TP/TP-A/EMA/TBRS = {expected['expected_sl']}/{expected['expected_tp']}/{expected['expected_tp_after']}/{expected['expected_ema']}/{expected['expected_tbrs']}"
+                f"S(Pasv) SL/TP/TP-A/EMA/TBRS/Shorts = {expected['expected_sl']}/{expected['expected_tp']}/{expected['expected_tp_after']}/{expected['expected_ema']}/{expected['expected_tbrs']}/{expected['expected_shorts']}"
             )
 
     # (*** MKA: Reporte Final ***)

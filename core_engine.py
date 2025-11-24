@@ -146,6 +146,7 @@ def run_one_combo(combo):
     
     # (*** MUDANÇA v1.9: TBRS ***)
     two_bar_reversal_stop = common_params.get('two_bar_reversal_stop', False)
+    short_on_stop = common_params.get('short_on_stop', False) # (*** NOVO ***)
     
     stops_on_candle = common_params.get('stops_on_candle', ['1D', '4H', '8H'])
     run_stops_on_1d = "1D" in stops_on_candle
@@ -226,8 +227,8 @@ def run_one_combo(combo):
             np_data = numpy_data_slices.get(date_label)
         
         if np_data is None or np_data['empty']:
-            # (*** MUDANÇA v1.9: 23 métricas ***)
-            results_by_date[date_label] = (0.0, (0,) * 23)
+            # (*** MUDANÇA v1.10: 24 métricas ***)
+            results_by_date[date_label] = (0.0, (0,) * 24)
             continue 
 
         ema_np = np_data['ema_arrays_np'].get(ema_len, np_data['ema_arrays_np'][default_ema_len])
@@ -264,6 +265,7 @@ def run_one_combo(combo):
             run_stops_on_8h,
             
             two_bar_reversal_stop, # (*** MUDANÇA v1.9: TBRS ***)
+            short_on_stop, # (*** NOVO ***)
             
             equity_out_np 
         )

@@ -100,6 +100,10 @@ def main():
     p.add_argument("--two-bar-reversal-stop", action="store_true", 
                    help="Vende a posição se o candle seguinte (do mesmo TF da compra) fechar abaixo da mínima do candle de compra.")
     
+    # (*** NOVO: Short on Stop ***)
+    p.add_argument("--short-on-stop", action="store_true",
+                   help="Abre um short de 100% ao acionar um Stop Loss (SL ou TBRS). Fecha ao surgir sinal de compra.")
+    
     # Parâmetros de Sweep (Listas)
     
     # (*** MUDANÇA v1.5: SL Bifurcado ***)
@@ -329,7 +333,8 @@ def main():
         'max_exposure_pct': args.max_exposure_pct,
         'stop_loss_signal': args.stop_loss_signal,
         'stops_on_candle': stops_on_candle,
-        'two_bar_reversal_stop': args.two_bar_reversal_stop # (*** MUDANÇA v1.9: TBRS ***)
+        'two_bar_reversal_stop': args.two_bar_reversal_stop, # (*** MUDANÇA v1.9: TBRS ***)
+        'short_on_stop': args.short_on_stop # (*** NOVO: Short on Stop ***)
     }
 
     worker_data_payload = {
@@ -578,7 +583,8 @@ def main():
     print(f"[INFO] Workers: {args.workers}")
     print(f"[INFO] Print Mode: {args.print_mode.upper()}")
     # (*** MUDANÇA v3.0: Log TXT ***)
-    print(f"[INFO] Saída de Log TXT: {log_file_path}\n")
+    print(f"[INFO] Saída de Log TXT: {log_file_path}")
+    print(f"[INFO] Short on Stop: {'ATIVADO' if args.short_on_stop else 'DESATIVADO'}\n")
 
     start = datetime.now() 
     processed = start_index 
