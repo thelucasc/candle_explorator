@@ -10,7 +10,7 @@ import numpy as np
 
 # (*** NOVO: Importa utilitários e o motor Numba isolado ***)
 import data_utils as du
-from numba_engine import _run_numba_loop
+from numba_engine import _run_numba_loop, run_full_track_mode
 
 # ==================== (v5.15) Helper de Preparação NumPy ====================
 def prepare_numpy_data(
@@ -84,7 +84,7 @@ def prepare_numpy_data(
             emas_s = pd.concat(ema_series_list).groupby(level=0).last()
             ema_np = emas_s.reindex(all_idx).to_numpy(dtype=np.float64, na_value=0.0)
             ema_arrays_np[length] = ema_np
-
+    
     is_1d_candle_np = all_idx.isin(idx_1d)
     is_4h_candle_np = all_idx.isin(idx_4h)
     is_8h_candle_np = all_idx.isin(idx_8h)
@@ -276,3 +276,144 @@ def run_one_combo(combo):
         results_by_date[date_label] = (pct_custom, metrics_custom)
     
     return ("multi-date", (*combo, results_by_date))
+
+def run_full_track_for_combo(combo, date_label):
+    """
+    Executa o modo Full Track para uma combinação específica e um período.
+    Retorna a lista de histórico de transações.
+    """
+    has_multiple_signal_params = g_data.get('has_multiple_signal_params', False)
+    
+    b4, s4, b8, s8, b1, s1, \
+    sl_up, sl_up_amt, sl_down, sl_down_amt, \
+    tp, tp_after, tp_sell, \
+    tp_ema_pct, tp_ema_amt, ema_len, \
+    sig_4h8h_sma_len, sig_4h8h_pir_th, \
+    sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
+    sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
+    sig_1d_pir_prev, sig_1d_pir_confirm = combo
+    
+    common_params = g_data['common_params']
+    numpy_data_slices = g_data['numpy_data_slices']
+    
+    initial_capital = common_params['initial_capital']
+    commission_bps = common_params['commission_bps']
+    max_exposure_pct = common_params['max_exposure_pct']
+    use_sl_on_signal_price = common_params.get('stop_loss_signal', False)
+    two_bar_reversal_stop = common_params.get('two_bar_reversal_stop', False)
+    short_on_stop = common_params.get('short_on_stop', False)
+    
+    stops_on_candle = common_params.get('stops_on_candle', ['1D', '4H', '8H'])
+    run_stops_on_1d = "1D" in stops_on_candle
+    run_stops_on_4h = "4H" in stops_on_candle
+    run_stops_on_8h = "8H" in stops_on_candle
+    
+    sl_up_pct_val = sl_up if sl_up is not None else 0.0
+    sl_up_sell_amount_val = sl_up_amt if sl_up_amt is not None else 100.0
+    sl_down_pct_val = sl_down if sl_down is not None else 0.0
+    sl_down_sell_amount_val = sl_down_amt if sl_down_amt is not None else 100.0
+    
+    tp_pct_val = tp if tp is not None else 0.0
+    tp_after_pct_val = tp_after if tp_after is not None else 0.0
+    tp_sell_pct_val = tp_sell if tp_sell is not None else 0.0
+    tp_ema_pct_val = tp_ema_pct if tp_ema_pct is not None else 0.0
+    tp_ema_sell_val = tp_ema_amt if tp_ema_amt is not None else 0.0
+    default_ema_len = g_data['default_ema_len']
+
+    # Se há múltiplos valores para parâmetros dos sinais, recalcula os sinais
+    if has_multiple_signal_params:
+        import indicators as ind
+        df_thin_slices = g_data.get('df_thin_slices', {})
+        thin_data = df_thin_slices.get(date_label)
+        
+        if thin_data is None:
+            return []
+        
+        df1d_thin = thin_data['df1d_thin']
+        df4h_thin = thin_data['df4h_thin']
+        df8h_thin = thin_data['df8h_thin']
+        
+        df1d = ind.compute_1D_cluster_signals(
+            df1d_thin,
+            sma_length=int(sig_1d_sma_len),
+            trend_regime_threshold=float(sig_1d_trend_reg_th),
+            trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
+            dist_ma_fast_threshold=float(sig_1d_dist_ma_th),
+            rsi_length=int(sig_1d_rsi_len),
+            rsi_threshold=float(sig_1d_rsi_th),
+            pir_threshold_prev=float(sig_1d_pir_prev),
+            pir_threshold_confirm=float(sig_1d_pir_confirm)
+        )
+        
+        if df4h_thin is not None:
+            df4h = ind.compute_pine_like_signals(
+                df4h_thin,
+                sma_length=int(sig_4h8h_sma_len),
+                pir_threshold=float(sig_4h8h_pir_th)
+            )
+        else:
+            df4h = None
+            
+        if df8h_thin is not None:
+            df8h = ind.compute_pine_like_signals(
+                df8h_thin,
+                sma_length=int(sig_4h8h_sma_len),
+                pir_threshold=float(sig_4h8h_pir_th)
+            )
+        else:
+            df8h = None
+        
+        unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
+        np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
+    else:
+        np_data = numpy_data_slices.get(date_label)
+    
+    if np_data is None or np_data['empty']:
+        return []
+
+    ema_np = np_data['ema_arrays_np'].get(ema_len, np_data['ema_arrays_np'][default_ema_len])
+    equity_out_np = np.empty_like(np_data['prices_np'], dtype=np.float64)
+
+    history = run_full_track_mode(
+        np_data['prices_np'], 
+        np_data['lows_np'], 
+        ema_np, 
+        np_data['buy_4h_np'], np_data['sell_4h_np'],
+        np_data['buy_8h_np'], np_data['sell_8h_np'],
+        np_data['buy_1d_np'], np_data['sell_1d_np'],
+        
+        np_data['is_1d_candle_np'],
+        np_data['is_4h_candle_np'],
+        np_data['is_8h_candle_np'],
+        
+        b4, s4, b8, s8, b1, s1,
+        
+        sl_up_pct_val, sl_up_sell_amount_val,
+        sl_down_pct_val, sl_down_sell_amount_val,
+        
+        tp_pct_val, 
+        
+        tp_after_pct_val, tp_sell_pct_val,
+        
+        tp_ema_pct_val, tp_ema_sell_val, 
+        commission_bps, initial_capital, max_exposure_pct, 
+        use_sl_on_signal_price, 
+        
+        run_stops_on_1d,
+        run_stops_on_4h,
+        run_stops_on_8h,
+        
+        two_bar_reversal_stop, 
+        short_on_stop, 
+        
+        equity_out_np 
+    )
+    
+    # Adiciona a data real ao histórico
+    all_idx = np_data['all_idx']
+    for item in history:
+        idx = item['index']
+        if idx < len(all_idx):
+            item['date'] = all_idx[idx]
+            
+    return history

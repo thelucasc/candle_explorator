@@ -1356,18 +1356,3 @@ Resultados (Vencedores Finais):
   B/S (4H 40/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:28/108(80) 8H:0/0(0) 1D:7/45(38) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:17 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:17]
 --------------------------------------------------------------------------------
 
-2025-11-26 07:52:37
-Comando: python sweep.py --file C:/Users/lucas/Downloads/ETH1D.csv --file-4h C:/Users/lucas/Downloads/ETH240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 12 --print-mode pos --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 50 70 100 --take-profit-after-percentage 25 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 --signal-4h8h-sma-length 20 40 50 --signal-4h8h-pir-threshold 0.85 0.75 0.90 --signal-1d-sma-length 20 40 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
-Resultados (Vencedores Finais):
-  BEST 1400D - +2423.97%
-  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:21/96(75) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:15 TP:2 TP-A:4 EMA:0 TBRS:0 Shorts:15]
-  BEST 400D - +366.96%
-  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:12/28(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:7 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:7]
-  BEST 1800D - +2575.18%
-  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:34/159(125) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:26 TP:4 TP-A:7 EMA:0 TBRS:0 Shorts:26]
-  BEST 310D - +227.81%
-  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:5/21(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:2]
-  BEST 590D - +296.02%
-  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:15/42(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:8 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:8]
---------------------------------------------------------------------------------
-

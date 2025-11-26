@@ -456,7 +456,7 @@ def main():
             custom_labels.append(custom_days_label_for_logger)
             
             del df1d_custom, df4h_custom, df8h_custom
-
+            
     
     worker_data_payload.update({
         'date_list': custom_labels,
@@ -798,13 +798,71 @@ def main():
                 for line in log_summary_lines_clean:
                     f.write(f"  {line}\n")
             else:
-                f.write("  Nenhum resultado vencedor encontrado.\n")
+                f.write("  (Nenhum resultado encontrado)\n")
             
-            f.write(f"{separator}\n")
+            f.write(f"{separator}\n\n")
             
     except Exception as e:
-        print(f"\n[ERRO AO SALVAR LOG FINAL] Não foi possível escrever em {log_file_path}: {e}\n")
+        print(f"[ERRO] Falha ao escrever no log TXT: {e}")
 
+    # --- 10. (NOVO) Full Track History para os Vencedores ---
+    print("\n" + "="*80)
+    print("===== GERANDO FULL TRACK HISTORY (VENCEDORES) =====")
+    print("="*80 + "\n")
     
+    # Garante que g_data está atualizado no processo principal
+    ce.init_worker(worker_data_payload)
+    
+    history_file = "sweep_winner_history.csv"
+    
+    # Cria/Sobrescreve o arquivo (limpa conteúdo anterior)
+    try:
+        with open(history_file, 'w', newline='', encoding='utf-8') as f:
+            pass 
+    except Exception as e:
+        print(f"[ERRO] Não foi possível criar o arquivo de histórico: {e}")
+        return
+
+    for date_label in date_list_final:
+        best_res = best_results_by_date[date_label]
+        if best_res:
+            # best_res = (*params_tuple, pct, metrics)
+            # params_tuple tem 26 itens.
+            combo = best_res[0:26]
+            
+            print(f"[INFO] Gerando histórico detalhado para BEST {date_label}D...")
+            history = ce.run_full_track_for_combo(combo, date_label)
+            
+            if history:
+                try:
+                    with open(history_file, 'a', newline='', encoding='utf-8') as f:
+                        writer = csv.writer(f)
+                        
+                        # (*** MUDANÇA: Adiciona separação visual entre períodos ***)
+                        writer.writerow([])
+                        writer.writerow([])
+                        writer.writerow([f"=== PERIOD {date_label}D ==="])
+                        writer.writerow(["Period", "Date", "Index", "Type", "Price", "Qty", "Reason", "PnL_Trade", "Equity"])
+                        
+                        for item in history:
+                            writer.writerow([
+                                date_label,
+                                item.get('date', ''),
+                                item['index'],
+                                item['type'],
+                                f"{item['price']:.2f}",
+                                f"{item['qty']:.6f}",
+                                item['reason'],
+                                f"{item['pnl_trade']:.2f}",
+                                f"{item['equity']:.2f}"
+                            ])
+                    print(f"[SUCESSO] Histórico salvo para {date_label}D.")
+                except Exception as e:
+                    print(f"[ERRO] Falha ao salvar histórico para {date_label}D: {e}")
+            else:
+                print(f"[AVISO] Nenhum histórico gerado para {date_label}D (talvez sem trades?).")
+    
+    print(f"\n[INFO] Full Track History concluído. Arquivo: {history_file}")
+
 if __name__ == "__main__":
     main()
