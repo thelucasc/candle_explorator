@@ -114,11 +114,25 @@ def format_result_line_custom(res, label, mark, days_label):
     Retorna uma lista com duas linhas: [linha_percentual, linha_detalhes]
     """
     try:
-        # (*** MUDANÇA: Detecta se há parâmetros dos sinais (26 params) ou apenas 16 ***)
-        has_signal_params = len(res) >= 26
+        # (*** MUDANÇA: Detecta se há parâmetros dos sinais (27 params - nova ordem) ou apenas 16/26 ***)
+        num_params = len(res)
         
-        if has_signal_params:
-            # 26 parâmetros: 16 originais + 10 parâmetros dos sinais
+        if num_params >= 28: # 27 params + pct_custom + metrics_custom
+            # 27 parâmetros: 11 parâmetros dos sinais + 16 originais
+            # Nova Ordem: Sinais Primeiro (para otimização)
+            sig_4h8h_sma_len, sig_4h8h_pir_th, \
+            sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
+            sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
+            sig_1d_pir_prev, sig_1d_pir_confirm, buy_only_up_emas, \
+            b4,s4,b8,s8,b1,s1, \
+            sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
+            tp_p, tp_after_p, tp_sell_p, \
+            tp_ema_pct, tp_ema_amt, ema_len = res[0:27]
+            
+            pct_custom = res[27]
+            metrics_custom = res[28]
+            has_signal_params = True
+        elif num_params >= 26: # Retrocompatibilidade (26 params, ordem antiga)
             b4,s4,b8,s8,b1,s1, \
             sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
             tp_p, tp_after_p, tp_sell_p, \
@@ -128,8 +142,10 @@ def format_result_line_custom(res, label, mark, days_label):
             sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
             sig_1d_pir_prev, sig_1d_pir_confirm = res[0:26]
             
+            buy_only_up_emas = 0 # Default
             pct_custom = res[26]
             metrics_custom = res[27]
+            has_signal_params = True
         else:
             # (*** MUDANÇA v1.6: Unpack de 16 params ***)
             b4,s4,b8,s8,b1,s1, \
@@ -154,6 +170,8 @@ def format_result_line_custom(res, label, mark, days_label):
             sig_1d_rsi_th = None
             sig_1d_pir_prev = None
             sig_1d_pir_confirm = None
+            buy_only_up_emas = 0
+            has_signal_params = False
         
         # (*** MUDANÇA v1.5: SL Bifurcado - String de SL ***)
         sl_up_str = f"SL-UP {sl_up_p:.1f}%@{sl_up_amt:.0f}%" if sl_up_p is not None else "SL-UP None"
@@ -170,11 +188,12 @@ def format_result_line_custom(res, label, mark, days_label):
         # (*** MUDANÇA: String de parâmetros dos sinais ***)
         signal_params_str = ""
         if has_signal_params and sig_4h8h_sma_len is not None:
+            buy_filter_str = f" BuyFilterEMA{buy_only_up_emas}" if buy_only_up_emas > 0 else ""
             signal_params_str = (
                 f"| Sig 4H/8H: SMA{sig_4h8h_sma_len:.0f} PIR{sig_4h8h_pir_th:.2f} | "
                 f"Sig 1D: SMA{sig_1d_sma_len:.0f} TR{sig_1d_trend_reg_th:.3f} TTR{sig_1d_trend_tree_th:.1f} "
                 f"DM{sig_1d_dist_ma_th:.2f} RSI{sig_1d_rsi_len:.0f}/{sig_1d_rsi_th:.0f} "
-                f"PIR{sig_1d_pir_prev:.2f}/{sig_1d_pir_confirm:.2f}"
+                f"PIR{sig_1d_pir_prev:.2f}/{sig_1d_pir_confirm:.2f}{buy_filter_str}"
             )
         
         # (*** MUDANÇA v1.10: 24 métricas ***)

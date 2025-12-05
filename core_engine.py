@@ -118,19 +118,18 @@ def init_worker(data_payload):
 
 
 def run_one_combo(combo):
-    # (*** CORREÇÃO: Sempre faz unpack de 26 parâmetros (16 originais + 10 parâmetros dos sinais) ***)
-    # Os parâmetros dos sinais sempre estão no produto cartesiano, mesmo com apenas 1 valor
     has_multiple_signal_params = g_data.get('has_multiple_signal_params', False)
     
-    # Sempre 26 parâmetros: 16 originais + 10 parâmetros dos sinais
-    b4, s4, b8, s8, b1, s1, \
-    sl_up, sl_up_amt, sl_down, sl_down_amt, \
-    tp, tp_after, tp_sell, \
-    tp_ema_pct, tp_ema_amt, ema_len, \
+    # (*** MUDANÇA: Unpack de 27 parâmetros (11 Sinais + 16 Base) ***)
+    # Nova Ordem: Sinais Primeiro (para otimização de cache)
     sig_4h8h_sma_len, sig_4h8h_pir_th, \
     sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
     sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
-    sig_1d_pir_prev, sig_1d_pir_confirm = combo
+    sig_1d_pir_prev, sig_1d_pir_confirm, buy_only_up_emas, \
+    b4, s4, b8, s8, b1, s1, \
+    sl_up, sl_up_amt, sl_down, sl_down_amt, \
+    tp, tp_after, tp_sell, \
+    tp_ema_pct, tp_ema_amt, ema_len = combo
     
     common_params = g_data['common_params']
     
@@ -170,61 +169,84 @@ def run_one_combo(combo):
 
     results_by_date = {}
 
-    for date_label in date_list:
-        # Se há múltiplos valores para parâmetros dos sinais, recalcula os sinais
-        if has_multiple_signal_params:
-            # Importa indicators para recalcular sinais
-            import indicators as ind
-            
-            # Pega os DataFrames thin para este período
-            df_thin_slices = g_data.get('df_thin_slices', {})
-            thin_data = df_thin_slices.get(date_label)
-            
-            if thin_data is None:
-                results_by_date[date_label] = (0.0, (0,) * 23)
-                continue
-            
-            df1d_thin = thin_data['df1d_thin']
-            df4h_thin = thin_data['df4h_thin']
-            df8h_thin = thin_data['df8h_thin']
-            
-            # Recalcula sinais com os parâmetros desta combinação
-            df1d = ind.compute_1D_cluster_signals(
-                df1d_thin,
-                sma_length=int(sig_1d_sma_len),
-                trend_regime_threshold=float(sig_1d_trend_reg_th),
-                trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
-                dist_ma_fast_threshold=float(sig_1d_dist_ma_th),
-                rsi_length=int(sig_1d_rsi_len),
-                rsi_threshold=float(sig_1d_rsi_th),
-                pir_threshold_prev=float(sig_1d_pir_prev),
-                pir_threshold_confirm=float(sig_1d_pir_confirm)
-            )
-            
-            if df4h_thin is not None:
-                df4h = ind.compute_pine_like_signals(
-                    df4h_thin,
-                    sma_length=int(sig_4h8h_sma_len),
-                    pir_threshold=float(sig_4h8h_pir_th)
-                )
-            else:
-                df4h = None
-                
-            if df8h_thin is not None:
-                df8h = ind.compute_pine_like_signals(
-                    df8h_thin,
-                    sma_length=int(sig_4h8h_sma_len),
-                    pir_threshold=float(sig_4h8h_pir_th)
-                )
-            else:
-                df8h = None
-            
-            # Prepara arrays NumPy com os sinais recalculados
-            unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
-            np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
+    # --- Lógica de Cache de Sinais ---
+    current_signal_params = combo[0:11]
+    cached_signal_params = g_data.get('last_signal_params')
+    cached_np_data_by_date = g_data.get('last_np_data_by_date')
+    
+    # Se os parâmetros de sinal mudaram ou não temos cache, precisamos (re)calcular ou buscar do payload
+    # Mas se has_multiple_signal_params for False, os dados já estão em numpy_data_slices (pré-calculados na main)
+    # e não precisamos recalcular nada, apenas usar.
+    
+    # Dicionário para guardar os dados NumPy desta execução (seja do cache, recalculado ou do payload)
+    current_np_data_by_date = {}
+
+    if has_multiple_signal_params:
+        # Verifica se podemos usar o cache
+        if cached_signal_params == current_signal_params and cached_np_data_by_date is not None:
+             current_np_data_by_date = cached_np_data_by_date
         else:
-            # Usa os arrays NumPy pré-calculados
-            np_data = numpy_data_slices.get(date_label)
+            # Precisa recalcular para todas as datas
+            import indicators as ind
+            df_thin_slices = g_data.get('df_thin_slices', {})
+            
+            for date_label in date_list:
+                thin_data = df_thin_slices.get(date_label)
+                if thin_data is None:
+                    current_np_data_by_date[date_label] = None
+                    continue
+                
+                df1d_thin = thin_data['df1d_thin']
+                df4h_thin = thin_data['df4h_thin']
+                df8h_thin = thin_data['df8h_thin']
+                
+                # Recalcula sinais
+                df1d = ind.compute_1D_cluster_signals(
+                    df1d_thin,
+                    sma_length=int(sig_1d_sma_len),
+                    trend_regime_threshold=float(sig_1d_trend_reg_th),
+                    trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
+                    dist_ma_fast_threshold=float(sig_1d_dist_ma_th),
+                    rsi_length=int(sig_1d_rsi_len),
+                    rsi_threshold=float(sig_1d_rsi_th),
+                    pir_threshold_prev=float(sig_1d_pir_prev),
+                    pir_threshold_confirm=float(sig_1d_pir_confirm),
+                    filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
+                )
+                
+                if df4h_thin is not None:
+                    df4h = ind.compute_pine_like_signals(
+                        df4h_thin,
+                        sma_length=int(sig_4h8h_sma_len),
+                        pir_threshold=float(sig_4h8h_pir_th),
+                        filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
+                    )
+                else:
+                    df4h = None
+                    
+                if df8h_thin is not None:
+                    df8h = ind.compute_pine_like_signals(
+                        df8h_thin,
+                        sma_length=int(sig_4h8h_sma_len),
+                        pir_threshold=float(sig_4h8h_pir_th),
+                        filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
+                    )
+                else:
+                    df8h = None
+                
+                unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
+                np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
+                current_np_data_by_date[date_label] = np_data
+            
+            # Atualiza o cache
+            g_data['last_signal_params'] = current_signal_params
+            g_data['last_np_data_by_date'] = current_np_data_by_date
+    else:
+        # Se não tem múltiplos parâmetros de sinal, usa os slices pré-calculados que vieram no payload
+        current_np_data_by_date = numpy_data_slices
+
+    for date_label in date_list:
+        np_data = current_np_data_by_date.get(date_label)
         
         if np_data is None or np_data['empty']:
             # (*** MUDANÇA v1.10: 24 métricas ***)
@@ -284,14 +306,15 @@ def run_full_track_for_combo(combo, date_label):
     """
     has_multiple_signal_params = g_data.get('has_multiple_signal_params', False)
     
-    b4, s4, b8, s8, b1, s1, \
-    sl_up, sl_up_amt, sl_down, sl_down_amt, \
-    tp, tp_after, tp_sell, \
-    tp_ema_pct, tp_ema_amt, ema_len, \
+    # (*** MUDANÇA: Unpack de 27 parâmetros ***)
     sig_4h8h_sma_len, sig_4h8h_pir_th, \
     sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
     sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
-    sig_1d_pir_prev, sig_1d_pir_confirm = combo
+    sig_1d_pir_prev, sig_1d_pir_confirm, buy_only_up_emas, \
+    b4, s4, b8, s8, b1, s1, \
+    sl_up, sl_up_amt, sl_down, sl_down_amt, \
+    tp, tp_after, tp_sell, \
+    tp_ema_pct, tp_ema_amt, ema_len = combo
     
     common_params = g_data['common_params']
     numpy_data_slices = g_data['numpy_data_slices']
@@ -333,6 +356,10 @@ def run_full_track_for_combo(combo, date_label):
         df4h_thin = thin_data['df4h_thin']
         df8h_thin = thin_data['df8h_thin']
         
+        # (*** USA CACHE SE POSSÍVEL ***)
+        # No modo Full Track, geralmente rodamos uma vez, então o cache pode não ser tão crítico,
+        # mas vamos usar a mesma lógica para consistência e para suportar o novo parâmetro.
+        
         df1d = ind.compute_1D_cluster_signals(
             df1d_thin,
             sma_length=int(sig_1d_sma_len),
@@ -342,14 +369,16 @@ def run_full_track_for_combo(combo, date_label):
             rsi_length=int(sig_1d_rsi_len),
             rsi_threshold=float(sig_1d_rsi_th),
             pir_threshold_prev=float(sig_1d_pir_prev),
-            pir_threshold_confirm=float(sig_1d_pir_confirm)
+            pir_threshold_confirm=float(sig_1d_pir_confirm),
+            filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
         )
         
         if df4h_thin is not None:
             df4h = ind.compute_pine_like_signals(
                 df4h_thin,
                 sma_length=int(sig_4h8h_sma_len),
-                pir_threshold=float(sig_4h8h_pir_th)
+                pir_threshold=float(sig_4h8h_pir_th),
+                filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
             )
         else:
             df4h = None
@@ -358,7 +387,8 @@ def run_full_track_for_combo(combo, date_label):
             df8h = ind.compute_pine_like_signals(
                 df8h_thin,
                 sma_length=int(sig_4h8h_sma_len),
-                pir_threshold=float(sig_4h8h_pir_th)
+                pir_threshold=float(sig_4h8h_pir_th),
+                filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
             )
         else:
             df8h = None

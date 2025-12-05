@@ -9,6 +9,7 @@ import random
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 import sys # <--- ADICIONADO PARA LER O COMANDO
+import time as time_module
 from typing import Optional, Dict, List, Tuple
 import subprocess
 import os
@@ -21,6 +22,7 @@ import data_utils as du
 import indicators as ind
 import logging_utils as lu
 import core_engine as ce
+import database_manager
 
 # ***** Silenciando warnings *****
 import warnings
@@ -54,8 +56,41 @@ def parse_bs_grid_arg(arg_list: Optional[List[str]], step_value: int) -> List[fl
         sys.exit(1)
 
 
+# ==================== HELPER METRICS ====================
+def calculate_metrics_from_history(history):
+    """Calcula métricas a partir do histórico detalhado de trades"""
+    if not history:
+        return 0.0, 0, 0.0, 0.0
+        
+    equity_curve = [item['equity'] for item in history]
+    if not equity_curve:
+        return 0.0, 0, 0.0, 0.0
+
+    # Max Drawdown
+    peak = equity_curve[0]
+    max_dd = 0.0
+    for val in equity_curve:
+        if val > peak:
+            peak = val
+        dd = (peak - val) / peak
+        if dd > max_dd:
+            max_dd = dd
+            
+    # Trades e Win Rate
+    # Consideramos trades fechados aqueles com pnl_trade != 0
+    trades = [item for item in history if item.get('pnl_trade', 0.0) != 0.0]
+    total_trades = len(trades)
+    winning_trades = len([t for t in trades if t['pnl_trade'] > 0])
+    win_rate = (winning_trades / total_trades * 100.0) if total_trades > 0 else 0.0
+    
+    # Sharpe (simplificado/placeholder, pois requer retornos diários alinhados)
+    sharpe = 0.0
+    
+    return max_dd * 100.0, total_trades, win_rate, sharpe
+
 # ==================== MAIN ====================
 def main():
+    database_manager.init_db() # ADDED: Initialize the database
     # (*** MUDANÇA v1.6: Descrição para 16P ***)
     p = argparse.ArgumentParser(description="Sweep de parâmetros (IN-PROCESS, 16P) para backtest.py.")
     p.add_argument("--file",    default="BTCUSDT1D.csv",   help="CSV 1D (Obrigatório)")
@@ -139,6 +174,9 @@ def main():
     p.add_argument("--signal-1d-rsi-threshold", type=float, default=None, nargs='+', help="RSI threshold para sinais 1D (default: 60)")
     p.add_argument("--signal-1d-pir-threshold-prev", type=float, default=None, nargs='+', help="PIR threshold anterior 1D (default: 0.60)")
     p.add_argument("--signal-1d-pir-threshold-confirm", type=float, default=None, nargs='+', help="PIR threshold confirmação 1D (default: 0.40)")
+    
+    # (*** NOVO: Filtro EMA ***)
+    p.add_argument("--buy-only-up-emas", type=int, default=None, nargs='+', help="Lista de comprimentos de EMA para filtro de compra (ex: 20 50). Se 0, desativa.")
 
     args = p.parse_args()
     
@@ -221,6 +259,9 @@ def main():
     signal_1d_pir_threshold_prev_grid = args.signal_1d_pir_threshold_prev if (args.signal_1d_pir_threshold_prev and len(args.signal_1d_pir_threshold_prev) > 0) else [0.60]
     signal_1d_pir_threshold_confirm_grid = args.signal_1d_pir_threshold_confirm if (args.signal_1d_pir_threshold_confirm and len(args.signal_1d_pir_threshold_confirm) > 0) else [0.40]
     
+    # (*** NOVO: Grid Filtro EMA ***)
+    buy_only_up_emas_grid = args.buy_only_up_emas if (args.buy_only_up_emas and len(args.buy_only_up_emas) > 0) else [0]
+    
     # Valores únicos para pré-cálculo (quando não há múltiplos valores)
     signal_4h8h_sma_length = signal_4h8h_sma_length_grid[0]
     signal_4h8h_pir_threshold = signal_4h8h_pir_threshold_grid[0]
@@ -247,7 +288,8 @@ def main():
         len(signal_1d_rsi_length_grid) > 1 or
         len(signal_1d_rsi_threshold_grid) > 1 or
         len(signal_1d_pir_threshold_prev_grid) > 1 or
-        len(signal_1d_pir_threshold_confirm_grid) > 1
+        len(signal_1d_pir_threshold_confirm_grid) > 1 or
+        len(buy_only_up_emas_grid) > 1 # (*** NOVO ***)
     )
     
     if has_multiple_signal_params:
@@ -271,7 +313,8 @@ def main():
             rsi_length=signal_1d_rsi_length,
             rsi_threshold=signal_1d_rsi_threshold,
             pir_threshold_prev=signal_1d_pir_threshold_prev,
-            pir_threshold_confirm=signal_1d_pir_threshold_confirm
+            pir_threshold_confirm=signal_1d_pir_threshold_confirm,
+            filter_ema_length=buy_only_up_emas_grid[0] # (*** NOVO ***)
         )
         print(f"[INFO] Sinais 1D calculados em {time_module.time() - start_sig:.2f}s")
         
@@ -282,7 +325,8 @@ def main():
             df4h = ind.compute_pine_like_signals(
                 df4h_thin,
                 sma_length=signal_4h8h_sma_length,
-                pir_threshold=signal_4h8h_pir_threshold
+                pir_threshold=signal_4h8h_pir_threshold,
+                filter_ema_length=buy_only_up_emas_grid[0] # (*** NOVO ***)
             )
             print(f"[INFO] Sinais 4H calculados em {time_module.time() - start_sig:.2f}s")
         else:
@@ -295,7 +339,8 @@ def main():
             df8h = ind.compute_pine_like_signals(
                 df8h_thin,
                 sma_length=signal_4h8h_sma_length,
-                pir_threshold=signal_4h8h_pir_threshold
+                pir_threshold=signal_4h8h_pir_threshold,
+                filter_ema_length=buy_only_up_emas_grid[0] # (*** NOVO ***)
             )
             print(f"[INFO] Sinais 8H calculados em {time_module.time() - start_sig:.2f}s")
         else:
@@ -499,8 +544,23 @@ def main():
     # --- 5. Preparar Combinações ---
     
     # (*** CORREÇÃO: Sempre inclui todos os parâmetros no produto cartesiano, mesmo com apenas 1 valor ***)
-    # Isso mantém a consistência e permite que o usuário adicione mais valores depois sem mudar a estrutura
+    # (*** OTIMIZAÇÃO: Parâmetros de Sinais PRIMEIRO para maximizar cache ***)
     combos = list(itertools.product(
+        # 1. Parâmetros dos sinais (4H/8H) - variam mais lentamente
+        signal_4h8h_sma_length_grid,
+        signal_4h8h_pir_threshold_grid,
+        # 2. Parâmetros dos sinais (1D)
+        signal_1d_sma_length_grid,
+        signal_1d_trend_regime_threshold_grid,
+        signal_1d_trend_regime_tree_threshold_grid,
+        signal_1d_dist_ma_threshold_grid,
+        signal_1d_rsi_length_grid,
+        signal_1d_rsi_threshold_grid,
+        signal_1d_pir_threshold_prev_grid,
+        signal_1d_pir_threshold_confirm_grid,
+        buy_only_up_emas_grid, # (*** NOVO ***)
+        
+        # 3. Parâmetros Base (variam mais rapidamente)
         grid_b4, grid_s4,
         grid_b8, grid_s8,
         grid_b1, grid_s1,
@@ -513,21 +573,10 @@ def main():
         tp_sell_pct_grid,
         tp_ema_pct_grid,
         tp_ema_amt_grid,
-        ema_len_grid,
-        # Parâmetros dos sinais (4H/8H) - sempre incluídos
-        signal_4h8h_sma_length_grid,
-        signal_4h8h_pir_threshold_grid,
-        # Parâmetros dos sinais (1D) - sempre incluídos
-        signal_1d_sma_length_grid,
-        signal_1d_trend_regime_threshold_grid,
-        signal_1d_trend_regime_tree_threshold_grid,
-        signal_1d_dist_ma_threshold_grid,
-        signal_1d_rsi_length_grid,
-        signal_1d_rsi_threshold_grid,
-        signal_1d_pir_threshold_prev_grid,
-        signal_1d_pir_threshold_confirm_grid
+        ema_len_grid
     ))
     
+    total = len(combos) 
     total = len(combos) 
 
     start_index = 0
@@ -637,10 +686,10 @@ def main():
         run_mode_res = res[0] # Deve ser "multi-date"
         res_data = res[1]
         
-        # (*** CORREÇÃO: Sempre 26 parâmetros (16 originais + 10 parâmetros dos sinais) ***)
+        # (*** CORREÇÃO: Sempre 27 parâmetros (11 Sinais + 16 Base) ***)
         # Os parâmetros dos sinais sempre estão no produto cartesiano, mesmo com apenas 1 valor
-        params_tuple = res_data[0:26]
-        results_by_date = res_data[26] # Dicionário: {'1400': (pct, metrics), '365': (pct, metrics)}
+        params_tuple = res_data[0:27]
+        results_by_date = res_data[27] # Dicionário: {'1400': (pct, metrics), '365': (pct, metrics)}
         
         # --- Tracking e Lógica de Print ---
         pnl_strs = []
@@ -700,11 +749,15 @@ def main():
         
         # --- Printar ---
         
-        # (*** MUDANÇA v1.7: 16 parâmetros (sempre os primeiros 16, mesmo com múltiplos sinais) ***)
+        # (*** MUDANÇA: Unpack de 27 parâmetros (Sinais Primeiro) ***)
+        sig_4h8h_sma_len, sig_4h8h_pir_th, \
+        sig_1d_sma_len, sig_1d_trend_reg_th, sig_1d_trend_tree_th, \
+        sig_1d_dist_ma_th, sig_1d_rsi_len, sig_1d_rsi_th, \
+        sig_1d_pir_prev, sig_1d_pir_confirm, buy_only_up_emas, \
         b4,s4,b8,s8,b1,s1, \
         sl_up_p, sl_up_amt, sl_down_p, sl_down_amt, \
         tp_p, tp_after_p, tp_sell_p, \
-        tp_ema_pct, tp_ema_amt, ema_len = params_tuple[0:16]
+        tp_ema_pct, tp_ema_amt, ema_len = params_tuple[0:27]
         
         sl_up_str = f"SL-UP {sl_up_p:.1f}%@{sl_up_amt:.0f}%" if sl_up_p is not None else "SL-UP None"
         sl_down_str = f"SL-DN {sl_down_p:.1f}%@{sl_down_amt:.0f}%" if sl_down_p is not None else "SL-DN None"
@@ -827,8 +880,8 @@ def main():
         best_res = best_results_by_date[date_label]
         if best_res:
             # best_res = (*params_tuple, pct, metrics)
-            # params_tuple tem 26 itens.
-            combo = best_res[0:26]
+            # params_tuple tem 27 itens.
+            combo = best_res[0:27]
             
             print(f"[INFO] Gerando histórico detalhado para BEST {date_label}D...")
             history = ce.run_full_track_for_combo(combo, date_label)
@@ -861,6 +914,52 @@ def main():
                     print(f"[ERRO] Falha ao salvar histórico para {date_label}D: {e}")
             else:
                 print(f"[AVISO] Nenhum histórico gerado para {date_label}D (talvez sem trades?).")
+
+            # --- SALVAR NO BANCO DE DADOS (SQLite) ---
+            try:
+                # 1. Calcular Métricas reais a partir do Histórico (history)
+                # O metrics_result (tupla) vindo do numba é muito simples,
+                # usamos o history detalhado gerado pelo run_full_track_for_combo
+                max_dd, total_trades, win_rate, sharpe = calculate_metrics_from_history(history)
+                
+                # Montar dict de metrics para passar ao DB
+                metrics_dict = {
+                    "max_drawdown": max_dd,
+                    "total_trades": total_trades,
+                    "win_rate": win_rate,
+                    "sharpe_ratio": sharpe
+                }
+                
+                pct_result = best_res[27] # PnL
+                
+                # 2. Montar Dicionário de Parâmetros (Fundir Args Gerais + Combo Vencedor)
+                # Mapeamento manual da tupla para nomes (ordem do core_engine)
+                combo_dict = {
+                    "sig_4h8h_sma_len": combo[0], "sig_4h8h_pir_th": combo[1],
+                    "sig_1d_sma_len": combo[2], "sig_1d_trend_reg_th": combo[3], "sig_1d_trend_tree_th": combo[4],
+                    "sig_1d_dist_ma_th": combo[5], "sig_1d_rsi_len": combo[6], "sig_1d_rsi_th": combo[7],
+                    "sig_1d_pir_prev": combo[8], "sig_1d_pir_confirm": combo[9], "buy_only_up_emas": combo[10],
+                    "buy4h": combo[11], "sell4h": combo[12], "buy8h": combo[13], "sell8h": combo[14], "buy1d": combo[15], "sell1d": combo[16],
+                    "sl_up_pct": combo[17], "sl_up_amt": combo[18], "sl_down_pct": combo[19], "sl_down_amt": combo[20],
+                    "tp_pct": combo[21], "tp_after_pct": combo[22], "tp_after_amt": combo[23],
+                    "tp_ema_pct": combo[24], "tp_ema_amt": combo[25], "ema_len": combo[26]
+                }
+                
+                # Adicionar configs globais do script (Capital, Commission, etc)
+                full_config = vars(args).copy()
+                full_config.update(combo_dict)
+                
+                # 3. Salvar
+                database_manager.save_result(
+                    filename=args.file,
+                    period_label=date_label,
+                    pnl=pct_result,
+                    metrics=metrics_dict, # Passando o dict calculado
+                    params_dict=full_config
+                )
+                
+            except Exception as e:
+                print(f"[DB-ERRO] Não foi possível salvar no banco: {e}")
     
     print(f"\n[INFO] Full Track History concluído. Arquivo: {history_file}")
 

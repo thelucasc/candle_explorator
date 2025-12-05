@@ -1371,3 +1371,284 @@ Resultados (Vencedores Finais):
   B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:15/42(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:8 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:8]
 --------------------------------------------------------------------------------
 
+2025-11-27 13:16:51
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 13:18:36
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 13:22:57
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 19:18:31
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 19:19:59
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 19:20:56
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 19:42:29
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 19:53:07
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --buy1d 25 --workers 1
+Resultados (Vencedores Finais):
+  BEST 365D - +53.97%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/27(23) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 1825D - +732.29%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:4/134(130) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:15:49
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:16:56
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:18:00
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:19:38
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:21:15
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +534.98%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:180/541(361) 8H:0/0(0) 1D:15/87(72) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:55 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +73.45%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:14/195(181) 8H:0/0(0) 1D:3/31(28) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:25:40
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +600.99%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +71.14%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:30:20
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +600.99%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +71.14%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:33:35
+Comando: python sweep.py --file C:/Users/lucas/Downloads/ETH1D.csv --file-4h C:/Users/lucas/Downloads/ETH240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 12 --print-mode pos --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 0 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 1400D - +2423.97%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:21/96(75) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:15 TP:2 TP-A:4 EMA:0 TBRS:0 Shorts:15]
+  BEST 400D - +366.96%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:12/28(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:7 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:7]
+  BEST 1800D - +2575.18%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:34/159(125) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:26 TP:4 TP-A:7 EMA:0 TBRS:0 Shorts:26]
+  BEST 310D - +227.81%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:5/21(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:2]
+  BEST 590D - +296.02%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:15/42(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:8 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:8]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:37:56
+Comando: python sweep.py --file C:/Users/lucas/Downloads/ETH1D.csv --file-4h C:/Users/lucas/Downloads/ETH240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 12 --print-mode pos --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 10 20 30 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 1400D - +2735.10%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA20| [B 4H:0/0(0) 8H:0/0(0) 1D:20/95(75) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:14 TP:2 TP-A:4 EMA:0 TBRS:0 Shorts:14]
+  BEST 400D - +366.96%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:12/28(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:7 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:7]
+  BEST 1800D - +3560.36%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA20| [B 4H:0/0(0) 8H:0/0(0) 1D:32/157(125) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:24 TP:4 TP-A:7 EMA:0 TBRS:0 Shorts:24]
+  BEST 310D - +227.81%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:5/21(16) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:2]
+  BEST 590D - +321.45%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 50/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA30| [B 4H:0/0(0) 8H:0/0(0) 1D:15/40(25) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:8 TP:0 TP-A:2 EMA:0 TBRS:0 Shorts:8]
+--------------------------------------------------------------------------------
+
+2025-11-27 22:59:40
+Comando: python sweep.py --file C:/Users/lucas/Dropbox/numbas/versions/numba_v5.2s/BTCUSDT1D.csv --file-4h C:/Users/lucas/Dropbox/numbas/versions/numba_v5.2s/BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 12 --print-mode pos --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 0 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 1400D - +1584.97%
+  B/S (4H 40/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:76/221(145) 8H:0/0(0) 1D:19/109(90) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:46 TP:4 TP-A:4 EMA:0 TBRS:0 Shorts:46]
+  BEST 400D - +138.91%
+  B/S (4H 90/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@100.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:13/80(67) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:5 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:5]
+  BEST 1800D - +4863.37%
+  B/S (4H 30/0.0 | 8H 0.0/0.0 | 1D 20/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:132/299(167) 8H:0/0(0) 1D:44/151(107) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:70 TP:0 TP-A:6 EMA:0 TBRS:0 Shorts:70]
+  BEST 310D - +59.95%
+  B/S (4H 40/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 50.0 | TP-Aft 60.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:10/55(45) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:3 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:3]
+  BEST 590D - +158.08%
+  B/S (4H 40/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40| [B 4H:28/108(80) 8H:0/0(0) 1D:7/45(38) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:17 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:17]
+--------------------------------------------------------------------------------
+
+2025-11-27 23:22:00
+Comando: python sweep.py --file C:/Users/lucas/Dropbox/numbas/versions/numba_v5.2s/BTCUSDT1D.csv --file-4h C:/Users/lucas/Dropbox/numbas/versions/numba_v5.2s/BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 7 --print-mode winners --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 10 20 30 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 1400D - +1315.12%
+  B/S (4H 30/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA50 TR0.002 TTR1.5 DM0.03 RSI30/60 PIR0.60/0.40 BuyFilterEMA20| [B 4H:55/222(167) 8H:0/0(0) 1D:3/59(56) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:25 TP:0 TP-A:3 EMA:0 TBRS:0 Shorts:25]
+  BEST 400D - +158.30%
+  B/S (4H 90/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@100.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA20| [B 4H:13/80(67) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:5 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:5]
+  BEST 1800D - +4811.68%
+  B/S (4H 30/0.0 | 8H 0.0/0.0 | 1D 10/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 70.0 | TP-Aft 60.0%@100.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA30| [B 4H:190/478(288) 8H:0/0(0) 1D:35/149(114) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:77 TP:0 TP-A:7 EMA:2 TBRS:0 Shorts:77]
+  BEST 310D - +64.12%
+  B/S (4H 70/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 50.0 | TP-Aft 60.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA20| [B 4H:10/54(44) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:5 TP:1 TP-A:0 EMA:0 TBRS:0 Shorts:5]
+  BEST 590D - +83.17%
+  B/S (4H 30/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.90 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA20| [B 4H:33/112(79) 8H:0/0(0) 1D:8/45(37) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:19 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:19]
+--------------------------------------------------------------------------------
+
+2025-11-28 01:41:48
+Comando: python sweep.py --file C:/Users/lucas/Downloads/BINANCE_AAVEUSDT, 1D.csv --file-4h C:/Users/lucas/Downloads/BINANCE_AAVEUSDT, 240.csv --file-8h .\BTCUSDT480.csv --date 1400 400 1800 310 590 --step 10 --workers 15 --print-mode winners --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2 4 6 --sl-up-amount 100 50 --sl-down-pct 3.0 5 7 --sl-down-amount 100 50 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 30 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 10 20 30 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 1400D - +907.07%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 4.0%@100% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA20| [B 4H:0/0(0) 8H:0/0(0) 1D:26/81(55) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:129 TP:0 TP-A:3 EMA:10 TBRS:0 Shorts:14]
+  BEST 400D - +457.64%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 4.0%@100% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:10/22(12) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:22 TP:0 TP-A:1 EMA:6 TBRS:0 Shorts:5]
+  BEST 1800D - +1108.70%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 4.0%@100% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA30 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA20| [B 4H:0/0(0) 8H:0/0(0) 1D:39/116(77) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:342 TP:1 TP-A:6 EMA:0 TBRS:0 Shorts:21]
+  BEST 310D - +161.18%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 40/0.0) | SL-UP 4.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 60.0%@100.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA50 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:4/14(10) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:1]
+  BEST 590D - +622.28%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 100/0.0) | SL-UP 2.0%@100% | SL-DN 7.0%@50% | TP 100.0 | TP-Aft 70.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA50 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:13/42(29) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:30 TP:0 TP-A:2 EMA:3 TBRS:0 Shorts:7]
+--------------------------------------------------------------------------------
+
+2025-12-01 09:04:23
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +600.99%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +71.14%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-12-01 10:36:06
+Comando: python sweep.py --file C:/Users/lucas/Downloads/BINANCE_ENAUSDT, 1D.csv --file-4h C:/Users/lucas/Downloads/BINANCE_ENAUSDT, 240.csv --file-8h .\BTCUSDT480.csv --date 60 100 200 400 500 --step 10 --workers 7 --print-mode winners --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2 4 6 --sl-up-amount 100 50 --sl-down-pct 3.0 5 7 --sl-down-amount 100 50 --tp-pct 50 70 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 50 100 --tp-ema-amount 30.0 --emas 20 30 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 60 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 10 20 30 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 60D - +0.00%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 60.0%@100.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 100D - +0.00%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 60.0%@100.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 200D - +267.34%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 40/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:7/9(2) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:2]
+  BEST 400D - +388.86%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 5.0%@50% | TP 70.0 | TP-Aft 70.0%@50.0% | EMA20 50.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA50 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA30| [B 4H:0/0(0) 8H:0/0(0) 1D:12/16(4) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:20 TP:1 TP-A:1 EMA:0 TBRS:0 Shorts:5]
+  BEST 500D - +146.36%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 40/0.0) | SL-UP 6.0%@50% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA30 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:25/28(3) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:301 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:2]
+--------------------------------------------------------------------------------
+
+2025-12-05 14:19:00
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --date 200 --step 100 --workers 4 --buy1d 100
+Resultados (Vencedores Finais):
+  BEST 200D - +22.40%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 100.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:1/16(15) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-12-05 14:24:05
+Comando: python sweep.py --file BTCUSDT1D.csv --file-4h BTCUSDT240.csv --file-8h BTCUSDT480.csv --date 200 --step 100 --workers 4 --buy1d 100
+Resultados (Vencedores Finais):
+  BEST 200D - +22.40%
+  B/S (4H 0.0/0.0 | 8H 0.0/0.0 | 1D 100.0/0.0) | SL-UP None | SL-DN None | TP None | TP-Aft None |  | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:0/0(0) 8H:0/0(0) 1D:1/16(15) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-12-05 14:38:54
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +600.99%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +71.14%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-12-05 14:51:20
+Comando: python .\sweep.py --file .\BTCUSDT1D.csv --file-4h .\BTCUSDT240.csv --file-8h .\BTCUSDT480.csv --stops-on-candle 1D --buy4h 10.0 --buy1d 25.0 --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sell1d 0.0 --sl-up-pct 2.0 --sl-up-amount 100 --sl-down-pct 3.0 --sl-down-amount 100 --tp-pct 100.0 --emas 20 --tp-ema-pct 100.0 --tp-ema-amount 30.0 --workers 1 --print-mode all --date 1400 400
+Resultados (Vencedores Finais):
+  BEST 1400D - +600.99%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:115/357(242) 8H:0/0(0) 1D:17/87(70) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:41 TP:2 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 400D - +71.14%
+  B/S (4H 10.0/0.0 | 8H 0.0/0.0 | 1D 25.0/0.0) | SL-UP 2.0%@100% | SL-DN 3.0%@100% | TP 100.0 | TP-Aft None | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40| [B 4H:11/130(119) 8H:0/0(0) 1D:4/31(27) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:1 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+--------------------------------------------------------------------------------
+
+2025-12-05 15:01:51
+Comando: python sweep.py --file C:/Users/lucas/Downloads/BINANCE_ENAUSDT, 1D.csv --file-4h C:/Users/lucas/Downloads/BINANCE_ENAUSDT, 240.csv --file-8h .\BTCUSDT480.csv --date 60 100 200 400 500 --step 10 --workers 7 --print-mode winners --start-pct 0.0 --log-file sweep_log.txt --buy1d step --sell1d 0.0 --buy4h step --sell4h 0.0 --buy8h 0.0 --sell8h 0.0 --sl-up-pct 2 4 6 --sl-up-amount 100 50 --sl-down-pct 3.0 5 7 --sl-down-amount 100 50 --tp-pct 50 100 --take-profit-after-percentage 60 70 --take-profit-percentage 50 100 --tp-ema-pct 30 100 --tp-ema-amount 30.0 --emas 20 30 --signal-4h8h-sma-length 20 40 --signal-4h8h-pir-threshold 0.85 0.90 --signal-1d-sma-length 20 50 --signal-1d-trend-regime-threshold 0.002 --signal-1d-trend-regime-tree-threshold 1.5 --signal-1d-dist-ma-threshold 0.03 --signal-1d-rsi-length 14 30 --signal-1d-rsi-threshold 60 20 --signal-1d-pir-threshold-prev 0.60 --signal-1d-pir-threshold-confirm 0.40 --buy-only-up-emas 10 20 30 --initial-capital 100000.0 --commission-bps 1.0 --max-exposure-pct 100.0 --stops-on-candle 1D --short-on-stop
+Resultados (Vencedores Finais):
+  BEST 60D - +0.00%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 6.0%@100% | SL-DN 3.0%@100% | TP 50.0 | TP-Aft 60.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 100D - +0.00%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 0/0.0) | SL-UP 6.0%@100% | SL-DN 3.0%@100% | TP 50.0 | TP-Aft 60.0%@50.0% | EMA20 30.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/60 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:0 TP:0 TP-A:0 EMA:0 TBRS:0 Shorts:0]
+  BEST 200D - +267.34%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 40/0.0) | SL-UP 2.0%@100% | SL-DN 7.0%@100% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:7/9(2) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:2 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:2]
+  BEST 400D - +388.86%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 90/0.0) | SL-UP 2.0%@100% | SL-DN 5.0%@50% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA20 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA50 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA30| [B 4H:0/0(0) 8H:0/0(0) 1D:12/16(4) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:20 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:5]
+  BEST 500D - +146.36%
+  B/S (4H 0/0.0 | 8H 0.0/0.0 | 1D 40/0.0) | SL-UP 6.0%@50% | SL-DN 3.0%@50% | TP 100.0 | TP-Aft 70.0%@100.0% | EMA30 100.0%@30.0% | Sig 4H/8H: SMA20 PIR0.85 | Sig 1D: SMA20 TR0.002 TTR1.5 DM0.03 RSI14/20 PIR0.60/0.40 BuyFilterEMA10| [B 4H:0/0(0) 8H:0/0(0) 1D:25/28(3) | S(Sig) 4H:0/0(0) 8H:0/0(0) 1D:0/0(0) | S(Pasv):[SL:301 TP:0 TP-A:1 EMA:0 TBRS:0 Shorts:2]
+--------------------------------------------------------------------------------
+

@@ -15,6 +15,7 @@ import shlex
 import json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+import database_manager # ADDED
 
 
 class SweepGUI:
@@ -32,7 +33,8 @@ class SweepGUI:
         self.create_widgets()
         # Carrega configurações salvas ou o último comando
         self.root.after(100, self.load_settings)
-        self.load_log_file()
+        self.root.after(100, self.load_settings)
+        # self.load_log_file() # REMOVIDO: Usaremos o DB agora
         
         # Salvar configurações ao fechar
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -151,33 +153,72 @@ class SweepGUI:
         )
         self.log_text.pack(fill=tk.BOTH, expand=True)
         
-        # ========== PAINEL DIREITO ==========
-        # Frame para o log de resultados
+        # ========== PAINEL DIREITO (DB Results) ==========
         right_header = ttk.Frame(right_frame)
         right_header.pack(fill=tk.X, padx=5, pady=5)
         
-        ttk.Label(right_header, text="Resultados (Sweep Log)", font=("Arial", 12, "bold")).pack(side=tk.LEFT)
+        ttk.Label(right_header, text="Banco de Resultados", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
         
-        self.show_winners_btn = ttk.Button(
-            right_header, 
-            text="📊 Vencedores Overall", 
-            command=self.toggle_view
-        )
-        self.show_winners_btn.pack(side=tk.RIGHT, padx=2)
+        # Filtro de Ativo
+        self.asset_filter_var = tk.StringVar(value="Todos")
+        self.asset_combo = ttk.Combobox(right_header, textvariable=self.asset_filter_var, state="readonly", width=15)
+        self.asset_combo.pack(side=tk.LEFT, padx=10)
+        self.asset_combo.bind("<<ComboboxSelected>>", self.refresh_results)
         
-        refresh_btn = ttk.Button(right_header, text="🔄 Atualizar", command=self.load_log_file)
-        refresh_btn.pack(side=tk.RIGHT, padx=2)
+        refresh_btn = ttk.Button(right_header, text="🔄", width=4, command=self.refresh_results)
+        refresh_btn.pack(side=tk.LEFT)
         
-        # Text widget para mostrar o log
-        self.results_text = scrolledtext.ScrolledText(
-            right_frame,
-            wrap=tk.WORD,
+        # Treeview Principal
+        columns = ("id", "timestamp", "asset", "period", "pnl", "dd", "trades")
+        self.tree = ttk.Treeview(right_frame, columns=columns, show="headings", selectmode="browse")
+        
+        self.tree.heading("id", text="ID")
+        self.tree.column("id", width=30, stretch=False)
+        
+        self.tree.heading("timestamp", text="Data")
+        self.tree.column("timestamp", width=100)
+        
+        self.tree.heading("asset", text="Ativo")
+        self.tree.column("asset", width=70)
+        
+        self.tree.heading("period", text="Período")
+        self.tree.column("period", width=60)
+        
+        self.tree.heading("pnl", text="PnL %")
+        self.tree.column("pnl", width=70)
+        
+        self.tree.heading("dd", text="DD %")
+        self.tree.column("dd", width=60)
+        
+        self.tree.heading("trades", text="# T")
+        self.tree.column("trades", width=40)
+        
+        # Scrollbar
+        tree_scroll = ttk.Scrollbar(right_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=tree_scroll.set)
+        
+        self.tree.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5)
+        
+        self.tree.bind("<<TreeviewSelect>>", self.on_result_select)
+        
+        # Painel de Detalhes
+        det_frame = ttk.Frame(right_frame)
+        det_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, padx=5, pady=5)
+        
+        ttk.Label(det_frame, text="Detalhes da Estratégia:", font=("Arial", 9, "bold")).pack(anchor="w")
+        
+        self.details_text = scrolledtext.ScrolledText(
+            det_frame,
+            height=12,
             font=("Consolas", 9),
             bg="#1e1e1e",
-            fg="#d4d4d4",
-            insertbackground="#d4d4d4"
+            fg="#80ff80",
+            insertbackground="white"
         )
-        self.results_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.details_text.pack(fill=tk.BOTH, expand=True)
+
+        # Carregar dados iniciais
+        self.root.after(500, self.refresh_results)
         
     def create_parameter_widgets(self, parent):
         """Cria os widgets de parâmetros"""
@@ -381,6 +422,15 @@ class SweepGUI:
         add_param("PIR Threshold Confirmação (1D):", "entry_float", "signal_1d_pir_threshold_confirm", "0.40",
                   help_text="(default: 0.40)")
         
+        # Separador: Filtros Adicionais
+        ttk.Separator(parent, orient=tk.HORIZONTAL).grid(row=row, column=0, sticky="ew", padx=5, pady=10)
+        row += 1
+        ttk.Label(parent, text="Filtros Adicionais", font=("Arial", 10, "bold")).grid(row=row, column=0, sticky="w", padx=5)
+        row += 1
+        
+        add_param("Buy Only Up EMAs:", "entry", "buy_only_up_emas", "0",
+                  help_text="Lista de EMAs para filtro (ex: 20 50). Se 0, desativa.")
+        
     def browse_file(self, var):
         """Abre diálogo para selecionar arquivo"""
         filename = filedialog.askopenfilename(
@@ -476,7 +526,10 @@ class SweepGUI:
                         "signal_1d_sma_length", "signal_1d_trend_regime_threshold",
                         "signal_1d_trend_regime_tree_threshold", "signal_1d_dist_ma_threshold",
                         "signal_1d_rsi_length", "signal_1d_rsi_threshold",
-                        "signal_1d_pir_threshold_prev", "signal_1d_pir_threshold_confirm"
+                        "signal_1d_trend_regime_tree_threshold", "signal_1d_dist_ma_threshold",
+                        "signal_1d_rsi_length", "signal_1d_rsi_threshold",
+                        "signal_1d_pir_threshold_prev", "signal_1d_pir_threshold_confirm",
+                        "buy_only_up_emas"
                     ]
                     
                     if arg_name in multi_value_args:
@@ -658,6 +711,10 @@ class SweepGUI:
             cmd.extend(["--signal-1d-pir-threshold-prev"] + self.vars["signal_1d_pir_threshold_prev"].get().strip().split())
         if self.vars.get("signal_1d_pir_threshold_confirm") and self.vars["signal_1d_pir_threshold_confirm"].get().strip():
             cmd.extend(["--signal-1d-pir-threshold-confirm"] + self.vars["signal_1d_pir_threshold_confirm"].get().strip().split())
+        
+        # Filtros Adicionais
+        if self.vars.get("buy_only_up_emas") and self.vars["buy_only_up_emas"].get().strip():
+            cmd.extend(["--buy-only-up-emas"] + self.vars["buy_only_up_emas"].get().strip().split())
         
         # Opções Avançadas
         if self.vars["initial_capital"].get().strip():
@@ -1057,6 +1114,102 @@ class SweepGUI:
                 
         except Exception as e:
             self.results_text.insert(tk.END, f"Erro ao processar sweep_log.txt: {str(e)}\n")
+
+
+    # ================= MÉTODOS DB =================
+    def refresh_results(self, event=None):
+        """Recarrega a lista de resultados do banco"""
+        try:
+            # 1. Atualizar lista de ativos
+            assets = database_manager.get_all_assets()
+            current_filter = self.asset_filter_var.get()
+            
+            combo_values = ["Todos"] + assets
+            self.asset_combo["values"] = combo_values
+            
+            if current_filter not in combo_values:
+                self.asset_filter_var.set("Todos")
+                current_filter = "Todos"
+            
+            # 2. Buscar dados
+            rows = database_manager.get_results(current_filter)
+            
+            # 3. Limpar Treeview
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+                
+            # 4. Popular
+            for row in rows:
+                # row é sqlite3.Row
+                ts = row["timestamp"]
+                # Formatar timestamp curto (DD/MM HH:MM)
+                try:
+                    dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+                    ts_short = dt.strftime("%d/%m %H:%M")
+                except:
+                    ts_short = ts
+                
+                # Cores baseadas no PnL
+                pnl = row["pnl_pct"]
+                tag = "green" if pnl > 0 else "red"
+                
+                self.tree.insert("", "end", iid=str(row["id"]), values=(
+                    row["id"],
+                    ts_short,
+                    row["asset_name"],
+                    row["period_label"],
+                    f"{pnl:.2f}%",
+                    f"{row['max_drawdown']:.2f}%",
+                    row["total_trades"]
+                ), tags=(tag,))
+            
+            # Configurar cores das tags
+            self.tree.tag_configure("green", foreground="#008800")
+            self.tree.tag_configure("red", foreground="#cc0000")
+            
+        except Exception as e:
+            print(f"[GUI ERRO] Falha ao atualizar resultados: {e}")
+
+    def on_result_select(self, event):
+        """Ao selecionar uma linha, exibir detalhes"""
+        selected = self.tree.selection()
+        if not selected:
+            return
+            
+        item_id = selected[0]
+        
+        try:
+            conn = database_manager.sqlite3.connect(database_manager.DB_NAME)
+            conn.row_factory = database_manager.sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("SELECT params_json, filename FROM results WHERE id = ?", (item_id,))
+            row = cursor.fetchone()
+            conn.close()
+            
+            if row:
+                params_json_str = row["params_json"]
+                filename = row["filename"]
+                
+                # Parse JSON
+                params = json.loads(params_json_str)
+                
+                self.details_text.delete("1.0", tk.END)
+                self.details_text.insert(tk.END, f"Arquivo Original: {filename}\n")
+                self.details_text.insert(tk.END, "-"*40 + "\n")
+                
+                # Formatar JSON bonito
+                pretty_json = json.dumps(params, indent=4)
+                self.details_text.insert(tk.END, pretty_json)
+                
+        except Exception as e:
+            self.details_text.delete("1.0", tk.END)
+            self.details_text.insert(tk.END, f"Erro ao carregar detalhes: {e}")
+
+    def load_log_file(self):
+        self.refresh_results()
+    
+    def toggle_view(self):
+        pass
 
 
 def main():
