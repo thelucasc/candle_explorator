@@ -186,23 +186,25 @@ def run_one_combo(combo):
         if cached_signal_params == current_signal_params and cached_np_data_by_date is not None:
              current_np_data_by_date = cached_np_data_by_date
         else:
-            # Precisa recalcular para todas as datas
+            # (*** FIX: paridade de warm-up ***)
+            # Calcula sinais UMA VEZ no thin completo, depois fatia por período.
+            # Isso garante que indicadores (SMA, EMA, RSI) entrem no slice já "aquecidos"
+            # — idêntico ao caminho has_multiple_signal_params=False.
             import indicators as ind
-            df_thin_slices = g_data.get('df_thin_slices', {})
-            
-            for date_label in date_list:
-                thin_data = df_thin_slices.get(date_label)
-                if thin_data is None:
+            df1d_thin_full = g_data.get('df1d_thin_full')
+            df4h_thin_full = g_data.get('df4h_thin_full')
+            df8h_thin_full = g_data.get('df8h_thin_full')
+            period_days_map = g_data.get('period_days_map', {})
+            unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
+
+            if df1d_thin_full is None:
+                # Fallback de segurança: marca tudo vazio
+                for date_label in date_list:
                     current_np_data_by_date[date_label] = None
-                    continue
-                
-                df1d_thin = thin_data['df1d_thin']
-                df4h_thin = thin_data['df4h_thin']
-                df8h_thin = thin_data['df8h_thin']
-                
-                # Recalcula sinais
-                df1d = ind.compute_1D_cluster_signals(
-                    df1d_thin,
+            else:
+                # 1. Sinais no thin COMPLETO
+                df1d_full = ind.compute_1D_cluster_signals(
+                    df1d_thin_full,
                     sma_length=int(sig_1d_sma_len),
                     trend_regime_threshold=float(sig_1d_trend_reg_th),
                     trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
@@ -211,33 +213,36 @@ def run_one_combo(combo):
                     rsi_threshold=float(sig_1d_rsi_th),
                     pir_threshold_prev=float(sig_1d_pir_prev),
                     pir_threshold_confirm=float(sig_1d_pir_confirm),
-                    filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
+                    filter_ema_length=int(buy_only_up_emas)
                 )
-                
-                if df4h_thin is not None:
-                    df4h = ind.compute_pine_like_signals(
-                        df4h_thin,
-                        sma_length=int(sig_4h8h_sma_len),
-                        pir_threshold=float(sig_4h8h_pir_th),
-                        filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
-                    )
-                else:
-                    df4h = None
-                    
-                if df8h_thin is not None:
-                    df8h = ind.compute_pine_like_signals(
-                        df8h_thin,
-                        sma_length=int(sig_4h8h_sma_len),
-                        pir_threshold=float(sig_4h8h_pir_th),
-                        filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
-                    )
-                else:
-                    df8h = None
-                
-                unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
-                np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
-                current_np_data_by_date[date_label] = np_data
-            
+                df4h_full = ind.compute_pine_like_signals(
+                    df4h_thin_full,
+                    sma_length=int(sig_4h8h_sma_len),
+                    pir_threshold=float(sig_4h8h_pir_th),
+                    filter_ema_length=int(buy_only_up_emas)
+                ) if df4h_thin_full is not None else None
+                df8h_full = ind.compute_pine_like_signals(
+                    df8h_thin_full,
+                    sma_length=int(sig_4h8h_sma_len),
+                    pir_threshold=float(sig_4h8h_pir_th),
+                    filter_ema_length=int(buy_only_up_emas)
+                ) if df8h_thin_full is not None else None
+
+                # 2. Fatia DEPOIS por período e monta numpy
+                for date_label in date_list:
+                    days_val = period_days_map.get(date_label, date_label)
+                    if days_val == 'ALL':
+                        df1d_sliced = df1d_full
+                        df4h_sliced = df4h_full
+                        df8h_sliced = df8h_full
+                    else:
+                        df1d_sliced = du.slice_period(df1d_full, int(days_val))
+                        df4h_sliced = du.cut_matching(df4h_full, df1d_sliced) if df4h_full is not None else None
+                        df8h_sliced = du.cut_matching(df8h_full, df1d_sliced) if df8h_full is not None else None
+
+                    np_data = prepare_numpy_data(df1d_sliced, df4h_sliced, df8h_sliced, unique_ema_lens)
+                    current_np_data_by_date[date_label] = np_data
+
             # Atualiza o cache
             g_data['last_signal_params'] = current_signal_params
             g_data['last_np_data_by_date'] = current_np_data_by_date
@@ -345,23 +350,20 @@ def run_full_track_for_combo(combo, date_label):
 
     # Se há múltiplos valores para parâmetros dos sinais, recalcula os sinais
     if has_multiple_signal_params:
+        # (*** FIX: paridade de warm-up ***)
+        # Calcula sinais no thin COMPLETO e SÓ DEPOIS fatia pelo period_label.
+        # Mesma lógica usada em run_one_combo e no caminho False — garante reprodutibilidade.
         import indicators as ind
-        df_thin_slices = g_data.get('df_thin_slices', {})
-        thin_data = df_thin_slices.get(date_label)
-        
-        if thin_data is None:
+        df1d_thin_full = g_data.get('df1d_thin_full')
+        df4h_thin_full = g_data.get('df4h_thin_full')
+        df8h_thin_full = g_data.get('df8h_thin_full')
+        period_days_map = g_data.get('period_days_map', {})
+
+        if df1d_thin_full is None:
             return []
-        
-        df1d_thin = thin_data['df1d_thin']
-        df4h_thin = thin_data['df4h_thin']
-        df8h_thin = thin_data['df8h_thin']
-        
-        # (*** USA CACHE SE POSSÍVEL ***)
-        # No modo Full Track, geralmente rodamos uma vez, então o cache pode não ser tão crítico,
-        # mas vamos usar a mesma lógica para consistência e para suportar o novo parâmetro.
-        
-        df1d = ind.compute_1D_cluster_signals(
-            df1d_thin,
+
+        df1d_full = ind.compute_1D_cluster_signals(
+            df1d_thin_full,
             sma_length=int(sig_1d_sma_len),
             trend_regime_threshold=float(sig_1d_trend_reg_th),
             trend_regime_tree_threshold=float(sig_1d_trend_tree_th),
@@ -370,29 +372,32 @@ def run_full_track_for_combo(combo, date_label):
             rsi_threshold=float(sig_1d_rsi_th),
             pir_threshold_prev=float(sig_1d_pir_prev),
             pir_threshold_confirm=float(sig_1d_pir_confirm),
-            filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
+            filter_ema_length=int(buy_only_up_emas)
         )
-        
-        if df4h_thin is not None:
-            df4h = ind.compute_pine_like_signals(
-                df4h_thin,
-                sma_length=int(sig_4h8h_sma_len),
-                pir_threshold=float(sig_4h8h_pir_th),
-                filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
-            )
+        df4h_full = ind.compute_pine_like_signals(
+            df4h_thin_full,
+            sma_length=int(sig_4h8h_sma_len),
+            pir_threshold=float(sig_4h8h_pir_th),
+            filter_ema_length=int(buy_only_up_emas)
+        ) if df4h_thin_full is not None else None
+        df8h_full = ind.compute_pine_like_signals(
+            df8h_thin_full,
+            sma_length=int(sig_4h8h_sma_len),
+            pir_threshold=float(sig_4h8h_pir_th),
+            filter_ema_length=int(buy_only_up_emas)
+        ) if df8h_thin_full is not None else None
+
+        # Fatia DEPOIS por período
+        days_val = period_days_map.get(date_label, date_label)
+        if days_val == 'ALL':
+            df1d = df1d_full
+            df4h = df4h_full
+            df8h = df8h_full
         else:
-            df4h = None
-            
-        if df8h_thin is not None:
-            df8h = ind.compute_pine_like_signals(
-                df8h_thin,
-                sma_length=int(sig_4h8h_sma_len),
-                pir_threshold=float(sig_4h8h_pir_th),
-                filter_ema_length=int(buy_only_up_emas) # (*** NOVO ***)
-            )
-        else:
-            df8h = None
-        
+            df1d = du.slice_period(df1d_full, int(days_val))
+            df4h = du.cut_matching(df4h_full, df1d) if df4h_full is not None else None
+            df8h = du.cut_matching(df8h_full, df1d) if df8h_full is not None else None
+
         unique_ema_lens = g_data.get('unique_ema_lens', [default_ema_len])
         np_data = prepare_numpy_data(df1d, df4h, df8h, unique_ema_lens)
     else:
@@ -445,5 +450,11 @@ def run_full_track_for_combo(combo, date_label):
         idx = item['index']
         if idx < len(all_idx):
             item['date'] = all_idx[idx]
-            
-    return history
+
+    # (*** FIX: expor equity final mark-to-market ***)
+    # history[-1]['equity'] é o equity NO ÚLTIMO TRADE, não no último candle.
+    # Se a estratégia ainda está posicionada após o último evento, o equity
+    # real continua flutuando com o preço — quem precisa do PnL final deve usar
+    # final_equity, não history[-1]['equity'].
+    final_equity = float(equity_out_np[-1]) if len(equity_out_np) > 0 else common_params['initial_capital']
+    return history, final_equity

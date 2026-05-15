@@ -511,27 +511,19 @@ def main():
         'unique_ema_lens': unique_ema_lens
     })
     
-    # Se há múltiplos valores, guarda os DataFrames thin por período para recálculo no worker
+    # (*** FIX: paridade de warm-up de indicadores ***)
+    # Guarda os DataFrames thin COMPLETOS no payload + mapa período->dias.
+    # Os sinais serão calculados no worker sobre o thin completo e SÓ DEPOIS fatiados,
+    # eliminando a divergência com o caminho has_multiple_signal_params=False.
     if has_multiple_signal_params:
-        worker_data_payload['df_thin_slices'] = {}
-        for date_label in custom_labels:
-            if date_label == 'ALL':
-                worker_data_payload['df_thin_slices'][date_label] = {
-                    'df1d_thin': df1d_thin,
-                    'df4h_thin': df4h_thin,
-                    'df8h_thin': df8h_thin
-                }
-            else:
-                days_custom = int(date_label)
-                df1d_custom_thin = du.slice_period(df1d_thin, days_custom)
-                df4h_custom_thin = du.cut_matching(df4h_thin, df1d_custom_thin) if df4h_thin is not None else None
-                df8h_custom_thin = du.cut_matching(df8h_thin, df1d_custom_thin) if df8h_thin is not None else None
-                worker_data_payload['df_thin_slices'][date_label] = {
-                    'df1d_thin': df1d_custom_thin,
-                    'df4h_thin': df4h_custom_thin,
-                    'df8h_thin': df8h_custom_thin
-                }
-        print("[INFO] DataFrames thin guardados para recálculo de sinais no worker.")
+        worker_data_payload['df1d_thin_full'] = df1d_thin
+        worker_data_payload['df4h_thin_full'] = df4h_thin
+        worker_data_payload['df8h_thin_full'] = df8h_thin
+        worker_data_payload['period_days_map'] = {
+            date_label: ('ALL' if date_label == 'ALL' else int(date_label))
+            for date_label in custom_labels
+        }
+        print("[INFO] DataFrames thin completos guardados para recálculo de sinais no worker.")
     
     # (*** FIM DA MUDANÇA v1.6 ***)
     
@@ -884,7 +876,7 @@ def main():
             combo = best_res[0:27]
             
             print(f"[INFO] Gerando histórico detalhado para BEST {date_label}D...")
-            history = ce.run_full_track_for_combo(combo, date_label)
+            history, _final_eq = ce.run_full_track_for_combo(combo, date_label)
             
             if history:
                 try:
